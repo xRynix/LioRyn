@@ -82,9 +82,9 @@ local SaveManager = {} do
 		if (not name) then
 			return false, 'no config file is selected'
 		end
-
+		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		
 		local fullPath = self.Folder .. '/settings/' .. name .. '.json'
-
 		local data = {
 			objects = {}
 		}
@@ -115,6 +115,7 @@ local SaveManager = {} do
 		if (not name) then
 			return false, 'no config file is selected'
 		end
+		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
 		if not isfile(file) then return false, 'invalid file' end
@@ -169,6 +170,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:RefreshConfigList()
+		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
 		local list = listfiles(self.Folder .. '/settings')
 
 		local out = {}
@@ -200,6 +202,8 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:LoadAutoloadConfig()
+		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		
 		if isfile(self.Folder .. '/settings/autoload.txt') then
 			local name = readfile(self.Folder .. '/settings/autoload.txt')
 

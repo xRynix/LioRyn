@@ -4036,14 +4036,14 @@ function Library:CreateWindow(...)
             Parent = ToggleUIInnerFrame;
         });
     
-        --Library:MakeDraggable(ToggleUIOuter);
+        Library:MakeDraggable(ToggleUIOuter);
 
         ToggleUIButton.MouseButton1Down:Connect(function()
             task.spawn(Library.Toggle)
         end)
 
-		-- Lock
-		local LockUIOuter = Library:Create('Frame', {
+	-- Lock
+	local LockUIOuter = Library:Create('Frame', {
             BorderColor3 = Color3.new(0, 0, 0);
             Position = UDim2.new(0.008, 0, 0.075, 0);
             Size = UDim2.new(0, 77, 0, 30);
@@ -4106,7 +4106,7 @@ function Library:CreateWindow(...)
             Parent = LockUIInnerFrame;
         });
     
-        --Library:MakeDraggable(LockUIOuter);
+        Library:MakeDraggable(LockUIOuter);
 		
         LockUIButton.MouseButton1Down:Connect(function()
             Library.CantDragForced = not Library.CantDragForced;

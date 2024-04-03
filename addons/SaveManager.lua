@@ -67,6 +67,15 @@ local SaveManager = {} do
 		},
 	}
 
+	function SaveManager:CheckFolderTree()
+		pcall(function()
+			if not isfolder(self.Folder) then -- who tought that isfolder should error when the folder is not found 😭
+				SaveManager:BuildFolderTree()
+				task.wait()
+			end
+		end)
+	end
+	
 	function SaveManager:SetIgnoreIndexes(list)
 		for _, key in next, list do
 			self.Ignore[key] = true
@@ -82,7 +91,7 @@ local SaveManager = {} do
 		if (not name) then
 			return false, 'no config file is selected'
 		end
-		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		SaveManager:CheckFolderTree()
 		
 		local fullPath = self.Folder .. '/settings/' .. name .. '.json'
 		local data = {
@@ -115,7 +124,7 @@ local SaveManager = {} do
 		if (not name) then
 			return false, 'no config file is selected'
 		end
-		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		SaveManager:CheckFolderTree()
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
 		if not isfile(file) then return false, 'invalid file' end
@@ -170,7 +179,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:RefreshConfigList()
-		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		SaveManager:CheckFolderTree()
 		local list = listfiles(self.Folder .. '/settings')
 
 		local out = {}
@@ -202,7 +211,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:LoadAutoloadConfig()
-		if not isfolder(self.Folder) then SaveManager:BuildFolderTree() task.wait() end
+		SaveManager:CheckFolderTree()
 		
 		if isfile(self.Folder .. '/settings/autoload.txt') then
 			local name = readfile(self.Folder .. '/settings/autoload.txt')

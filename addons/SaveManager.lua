@@ -2,7 +2,7 @@ local httpService = game:GetService('HttpService')
 
 if copyfunction and isfolder then -- fix for mobile executors :/
 	local isfolder_, isfile_, listfiles_ = copyfunction(isfolder), copyfunction(isfile), copyfunction(listfiles);
-	local success_, error_ = pcall(function() return isfolder_(tostring(math.random(999999999, 999999999999)) end);
+	local success_, error_ = pcall(function() return isfolder_(tostring(math.random(999999999, 999999999999))) end);
 
 	if success_ == false or (tostring(error_):match("not") and tostring(error_):match("found")) then
 		getgenv().isfolder = function(folder)

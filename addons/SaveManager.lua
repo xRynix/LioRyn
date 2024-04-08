@@ -11,7 +11,7 @@ if copyfunction and isfolder then -- fix for mobile executors :/
 			return data
 		end
 	
-		getgenv().isfile_ = function(file)
+		getgenv().isfile = function(file)
 			local s, data = pcall(function() return isfile_(file) end)
 			if s == false then return nil end
 			return data

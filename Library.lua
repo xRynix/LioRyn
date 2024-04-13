@@ -20,7 +20,12 @@ ScreenGui.Parent = CoreGui;
 local Toggles = {};
 local Options = {};
 
-getgenv().Toggles = Toggles;
+getgenv().Linoria = { 
+	Toggles = Toggles,
+	Options = Options
+}
+
+getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
 getgenv().Options = Options;
 
 local LibraryMainOuterFrame = nil;

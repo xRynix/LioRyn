@@ -3874,7 +3874,7 @@ function Library:CreateWindow(...)
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
         Toggled = (not Toggled);
-		Library.Toggled = Toggled;
+	Library.Toggled = Toggled;
         ModalElement.Modal = Toggled;
 
         if Toggled then
@@ -3883,46 +3883,49 @@ function Library:CreateWindow(...)
 
             task.spawn(function()
                 -- TODO: add cursor fade?
-			    local State = InputService.MouseIconEnabled;
+		local State = InputService.MouseIconEnabled;
                 local Cursor, CursorOutline;
 				
-				if Library.ShowCustomCursor then
-					local CursorSuccess, CursorError = pcall(function()
-						Cursor = Drawing.new('Triangle');
-						Cursor.Thickness = 1;
-						Cursor.Filled = true;
-						Cursor.Visible = true;
+		if Library.ShowCustomCursor then
+			InputService.MouseIconEnabled = State;
+			
+			local CursorSuccess, CursorError = pcall(function()
+				Cursor = Drawing.new('Triangle');
+				Cursor.Thickness = 1;
+				Cursor.Filled = true;
+				Cursor.Visible = true;
 
-						CursorOutline = Drawing.new('Triangle');
-						CursorOutline.Thickness = 1;
-						CursorOutline.Filled = false;
-						CursorOutline.Color = Color3.new(0, 0, 0);
-						CursorOutline.Visible = true;
+				CursorOutline = Drawing.new('Triangle');
+				CursorOutline.Thickness = 1;
+				CursorOutline.Filled = false;
+				CursorOutline.Color = Color3.new(0, 0, 0);
+				CursorOutline.Visible = true;
 
-						while Toggled and ScreenGui.Parent and Library.ShowCustomCursor do
-							InputService.MouseIconEnabled = false;
+				while Toggled and ScreenGui.Parent and Library.ShowCustomCursor do
+					InputService.MouseIconEnabled = false;
 
-							local mPos = InputService:GetMouseLocation();
+					local mPos = InputService:GetMouseLocation();
 
-							Cursor.Color = Library.AccentColor;
+					Cursor.Color = Library.AccentColor;
 
-							Cursor.PointA = Vector2.new(mPos.X, mPos.Y);
-							Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6);
-							Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16);
+					Cursor.PointA = Vector2.new(mPos.X, mPos.Y);
+					Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6);
+					Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16);
 
-							CursorOutline.PointA = Cursor.PointA;
-							CursorOutline.PointB = Cursor.PointB;
-							CursorOutline.PointC = Cursor.PointC;
+					CursorOutline.PointA = Cursor.PointA;
+					CursorOutline.PointB = Cursor.PointB;
+					CursorOutline.PointC = Cursor.PointC;
 
-							RenderStepped:Wait();
-						end;
-					end)
-
-					if Cursor then Cursor:Remove(); end;
-					if CursorOutline then CursorOutline:Remove(); end;
+					RenderStepped:Wait();
 				end;
-				
-				InputService.MouseIconEnabled = State;
+			end)
+
+			if CursorError then InputService.MouseIconEnabled = true; end;
+			if Cursor then Cursor:Remove(); end;
+			if CursorOutline then CursorOutline:Remove(); end;
+		else
+			InputService.MouseIconEnabled = true;
+		end;
             end);
         end;
 

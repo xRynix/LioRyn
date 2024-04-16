@@ -3124,9 +3124,6 @@ function Library:SetWatermark(Text)
 end;
 
 function Library:Notify(Text, Time, SoundId)
-    assert(typeof(time) ~= "Instance" and typeof(time) ~= "number", "2nd argument of the notify function is a invalid type.")
-	--assert(typeof(SoundId) ~= "string" and typeof(SoundId) ~= "number", "3nd argument of the notify function is a invalid type.")
-	
     local XSize, YSize = Library:GetTextBounds(Text, Library.Font, 14);
 
     YSize = YSize + 7
@@ -3204,12 +3201,15 @@ function Library:Notify(Text, Time, SoundId)
         BackgroundColor3 = 'AccentColor';
     }, true);
 
-	local NotificationSound = Library:Create('Sound', {
-	    SoundId = SoundId ~= nil and ("rbxassetid://" .. tostring(SoundId):gsub("rbxassetid://", "")) or "rbxassetid://4590657391";
-		Volume = 3;
-	    Parent = game:GetService("SoundService");
-	});
-	NotificationSound:Play()
+    if SoundId then
+        Library:Create('Sound', {
+            SoundId = "rbxassetid://" .. tostring(SoundId):gsub("rbxassetid://", "");
+            Volume = 3;
+            PlayOnRemove = true;
+            Parent = game:GetService("SoundService");
+        }):Destroy();
+    end
+
     pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
 
     task.spawn(function()
@@ -3224,10 +3224,6 @@ function Library:Notify(Text, Time, SoundId)
         task.wait(0.4);
 
         NotifyOuter:Destroy();
-		if NotificationSound.Playing == true then
-			NotificationSound.Stopped:Wait()
-		end
-		NotificationSound:Destroy()
     end);
 end;
 

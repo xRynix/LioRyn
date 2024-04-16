@@ -222,7 +222,7 @@ function Library:MakeDraggable(Instance, Cutoff)
 				Dragging = false
 				return;
 			end
-            if not Dragging and Library:IsMouseOverFrame(Instance, Input) and Library.Window.Holder.Visible == true then
+            if not Dragging and Library:MouseIsOverFrame(Instance, Input) and Library.Window.Holder.Visible == true then
                 DraggingInput = Input;
                 DraggingStart = Input.Position;
                 StartPosition = Instance.Position;
@@ -458,7 +458,7 @@ function Library:MouseIsOverOpenedFrame(Input)
     end;
 end;
 
-function Library:IsMouseOverFrame(Frame, Input)
+function Library:MouseIsOverFrame(Frame, Input)
     local Pos = Mouse;
     if Library.IsMobile and Input then 
         Pos = Input.Position;
@@ -587,8 +587,9 @@ do
     local Funcs = {};
 
     function Funcs:AddColorPicker(Idx, Info)
+        local ParentObj = self
         local ToggleLabel = self.TextLabel;
-        -- local Container = self.Container;
+        local Container = self.Container;
 
         assert(Info.Default, 'AddColorPicker: Missing default value.');
 
@@ -598,6 +599,8 @@ do
             Type = 'ColorPicker';
             Title = type(Info.Title) == 'string' and Info.Title or 'Color picker',
             Callback = Info.Callback or function(Color) end;
+
+            Container = Container
         };
 
         function ColorPicker:SetHSVFromRGB(Color)
@@ -1051,6 +1054,10 @@ do
             Func(ColorPicker.Value)
         end;
 
+        if ParentObj.Addons then
+            table.insert(ParentObj.Addons, ColorPicker)
+        end
+
         function ColorPicker:Show()
             for Frame, Val in next, Library.OpenedFrames do
                 if Frame.Name == 'Color' then
@@ -1169,13 +1176,13 @@ do
                     ColorPicker:Hide();
                 end;
 
-                if not Library:IsMouseOverFrame(ContextMenu.Container) then
+                if not Library:MouseIsOverFrame(ContextMenu.Container) then
                     ContextMenu:Hide()
                 end
             end;
 
             if Input.UserInputType == Enum.UserInputType.MouseButton2 and ContextMenu.Container.Visible then
-                if not Library:IsMouseOverFrame(ContextMenu.Container) and not Library:IsMouseOverFrame(DisplayFrame) then
+                if not Library:MouseIsOverFrame(ContextMenu.Container) and not Library:MouseIsOverFrame(DisplayFrame) then
                     ContextMenu:Hide()
                 end
             end
@@ -1203,8 +1210,9 @@ do
             Type = 'KeyPicker';
             Callback = Info.Callback or function(Value) end;
             ChangedCallback = Info.ChangedCallback or function(New) end;
-
             SyncToggleState = Info.SyncToggleState or false;
+
+            Container = Container
         };
 
         if KeyPicker.SyncToggleState then
@@ -2121,6 +2129,9 @@ do
 
         ToggleRegion.InputBegan:Connect(function(Input)
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+				for _, Addon in next, Toggle.Addons do
+					if Library:MouseIsOverFrame(Addon.Container) then return end
+				end
                 Toggle:SetValue(not Toggle.Value) -- Why was it not like this from the start?
                 Library:AttemptSave();
             end;

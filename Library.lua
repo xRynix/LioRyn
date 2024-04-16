@@ -410,7 +410,7 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 		LibraryMainOuterFrame:GetPropertyChangedSignal("Visible"):Connect(function() 
 			if LibraryMainOuterFrame.Visible == false then
 				IsHovering = false
-        		Tooltip.Visible = false
+                Tooltip.Visible = false
 			end
 		end)
 	end
@@ -431,7 +431,6 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
     end)
 
     HighlightInstance.MouseLeave:Connect(function()
-        if condition and not condition() then return end
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, PropertiesDefault do
@@ -2087,8 +2086,9 @@ do
             { BorderColor3 = 'Black' },
             function()
                 for _, Addon in next, Toggle.Addons do
-                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end
+                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return false end
                 end
+                return true
             end
         );
 

@@ -3899,59 +3899,40 @@ function Library:CreateWindow(...)
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
         Toggled = (not Toggled);
-	Library.Toggled = Toggled;
+        Library.Toggled = Toggled;
         ModalElement.Modal = Toggled;
 
         if Toggled then
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
             Outer.Visible = true;
 
-            task.spawn(function()
-                -- TODO: add cursor fade?
-		local State = InputService.MouseIconEnabled;
-                local Cursor, CursorOutline;
-				
-		if Library.ShowCustomCursor then
-			InputService.MouseIconEnabled = State;
-			
-			local CursorSuccess, CursorError = pcall(function()
-				Cursor = Drawing.new('Triangle');
-				Cursor.Thickness = 1;
-				Cursor.Filled = true;
-				Cursor.Visible = true;
+            if Library.ShowCustomCursor and Drawing then
+                local Cursor = Drawing.new("Triangle")
+                Cursor.Thickness = 1
+                Cursor.Filled = true
+                Cursor.Visible = true
+                local CursorOutline = Drawing.new("Triangle")
+                CursorOutline.Thickness = 1
+                CursorOutline.Filled = false
+                CursorOutline.Color = Color3.new(0, 0, 0)
+                CursorOutline.Visible = true
 
-				CursorOutline = Drawing.new('Triangle');
-				CursorOutline.Thickness = 1;
-				CursorOutline.Filled = false;
-				CursorOutline.Color = Color3.new(0, 0, 0);
-				CursorOutline.Visible = true;
-
-				while Toggled and ScreenGui.Parent and Library.ShowCustomCursor do
-					InputService.MouseIconEnabled = false;
-
-					local mPos = InputService:GetMouseLocation();
-
-					Cursor.Color = Library.AccentColor;
-
-					Cursor.PointA = Vector2.new(mPos.X, mPos.Y);
-					Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6);
-					Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16);
-
-					CursorOutline.PointA = Cursor.PointA;
-					CursorOutline.PointB = Cursor.PointB;
-					CursorOutline.PointC = Cursor.PointC;
-
-					RenderStepped:Wait();
-				end;
-			end)
-
-			if CursorError then InputService.MouseIconEnabled = true; end;
-			if Cursor then Cursor:Remove(); end;
-			if CursorOutline then CursorOutline:Remove(); end;
-		else
-			InputService.MouseIconEnabled = true;
-		end;
-            end);
+                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera, function()
+                    InputService.MouseIconEnabled = false
+                    local x, y = Mouse.X, Mouse.Y
+                    Cursor.Color = Library.AccentColor
+                    Cursor.PointA = Vector2.new(x, y)
+                    Cursor.PointB = Vector2.new(x + 16, y + 6)
+                    Cursor.PointC = Vector2.new(x + 6, y + 16)
+                    CursorOutline.PointA = Cursor.PointA
+                    CursorOutline.PointB = Cursor.PointB
+                    CursorOutline.PointC = Cursor.PointC
+                    if not (Toggled and ScreenGui.Parent and Library.ShowCustomCursor) then
+                        InputService.MouseIconEnabled = true
+                        RunService:UnbindFromRenderStep("LinoriaCursor")
+                    end
+                end)
+            end
         end;
 
         for _, Desc in next, Outer:GetDescendants() do

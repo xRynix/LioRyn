@@ -3917,7 +3917,7 @@ function Library:CreateWindow(...)
                 CursorOutline.Color = Color3.new(0, 0, 0)
                 CursorOutline.Visible = true
 
-                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera, function()
+                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value, function()
                     InputService.MouseIconEnabled = false
                     local x, y = Mouse.X, Mouse.Y
                     Cursor.Color = Library.AccentColor

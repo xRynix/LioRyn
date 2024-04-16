@@ -3916,19 +3916,21 @@ function Library:CreateWindow(...)
                 CursorOutline.Filled = false
                 CursorOutline.Color = Color3.new(0, 0, 0)
                 CursorOutline.Visible = true
-
-                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value, function()
+                
+                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value - 1, function()
                     InputService.MouseIconEnabled = false
-                    local x, y = Mouse.X, Mouse.Y
+                    local mPos = InputService:GetMouseLocation()
                     Cursor.Color = Library.AccentColor
-                    Cursor.PointA = Vector2.new(x, y)
-                    Cursor.PointB = Vector2.new(x + 16, y + 6)
-                    Cursor.PointC = Vector2.new(x + 6, y + 16)
+                    Cursor.PointA = Vector2.new(mPos.X, mPos.Y)
+                    Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6)
+                    Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16)
                     CursorOutline.PointA = Cursor.PointA
                     CursorOutline.PointB = Cursor.PointB
                     CursorOutline.PointC = Cursor.PointC
                     if not (Toggled and ScreenGui.Parent and Library.ShowCustomCursor) then
                         InputService.MouseIconEnabled = true
+                        Cursor:Destroy()
+                        CursorOutline:Destroy()
                         RunService:UnbindFromRenderStep("LinoriaCursor")
                     end
                 end)

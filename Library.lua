@@ -2129,9 +2129,9 @@ do
 
         ToggleRegion.InputBegan:Connect(function(Input)
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-				for _, Addon in next, Toggle.Addons do
-					if Library:MouseIsOverFrame(Addon.Container) then return end
-				end
+                for _, Addon in next, Toggle.Addons do
+                    if Library:MouseIsOverFrame(Addon.Container) then return end
+                end
                 Toggle:SetValue(not Toggle.Value) -- Why was it not like this from the start?
                 Library:AttemptSave();
             end;

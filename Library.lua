@@ -417,8 +417,7 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 end
 
 function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, condition)
-    HighlightInstance.MouseEnter:Connect(function()
-        if condition and not condition() then return end
+    local function doHighlight()
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, Properties do
@@ -428,9 +427,8 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
                 Reg.Properties[Property] = ColorIdx;
             end;
         end;
-    end)
-
-    HighlightInstance.MouseLeave:Connect(function()
+    end
+    local function undoHighlight()
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, PropertiesDefault do
@@ -440,6 +438,17 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
                 Reg.Properties[Property] = ColorIdx;
             end;
         end;
+    end
+
+    HighlightInstance.MouseEnter:Connect(function()
+        doHighlight()
+    end)
+    HighlightInstance.MouseMoved:Connect(function()
+        if condition and not condition() then undoHighlight() end
+        doHighlight()
+    end)
+    HighlightInstance.MouseLeave:Connect(function()
+        undoHighlight()
     end)
 end;
 

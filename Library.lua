@@ -599,8 +599,6 @@ do
             Type = 'ColorPicker';
             Title = type(Info.Title) == 'string' and Info.Title or 'Color picker',
             Callback = Info.Callback or function(Color) end;
-
-            Container = Container
         };
 
         function ColorPicker:SetHSVFromRGB(Color)
@@ -1211,8 +1209,6 @@ do
             Callback = Info.Callback or function(Value) end;
             ChangedCallback = Info.ChangedCallback or function(New) end;
             SyncToggleState = Info.SyncToggleState or false;
-
-            Container = Container
         };
 
         if KeyPicker.SyncToggleState then
@@ -1520,6 +1516,7 @@ do
         end))
 
         KeyPicker:Update();
+        KeyPicker.DisplayFrame = PickOuter
 
         Options[Idx] = KeyPicker;
 
@@ -2130,7 +2127,7 @@ do
         ToggleRegion.InputBegan:Connect(function(Input)
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                 for _, Addon in next, Toggle.Addons do
-                    if Library:MouseIsOverFrame(Addon.Container) then return end
+                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end
                 end
                 Toggle:SetValue(not Toggle.Value) -- Why was it not like this from the start?
                 Library:AttemptSave();

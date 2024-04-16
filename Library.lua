@@ -416,8 +416,9 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 	end
 end
 
-function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault)
+function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, condition)
     HighlightInstance.MouseEnter:Connect(function()
+        if condition and not condition() then return end
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, Properties do
@@ -430,6 +431,7 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
     end)
 
     HighlightInstance.MouseLeave:Connect(function()
+        if condition and not condition() then return end
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, PropertiesDefault do
@@ -2082,7 +2084,12 @@ do
 
         Library:OnHighlight(ToggleRegion, ToggleOuter,
             { BorderColor3 = 'AccentColor' },
-            { BorderColor3 = 'Black' }
+            { BorderColor3 = 'Black' },
+            function()
+                for _, Addon in next, Toggle.Addons do
+                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end
+                end
+            end
         );
 
         function Toggle:UpdateColors()

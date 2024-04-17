@@ -3914,6 +3914,7 @@ function Library:CreateWindow(...)
                 CursorOutline.Color = Color3.new(0, 0, 0)
                 CursorOutline.Visible = true
                 
+                local OldMouseIconState = InputService.MouseIconEnabled
                 RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value - 1, function()
                     InputService.MouseIconEnabled = false
                     local mPos = InputService:GetMouseLocation()
@@ -3926,7 +3927,7 @@ function Library:CreateWindow(...)
                     CursorOutline.PointB = Cursor.PointB
                     CursorOutline.PointC = Cursor.PointC
                     if not (Toggled and ScreenGui.Parent and Library.ShowCustomCursor) then
-                        InputService.MouseIconEnabled = true
+                        InputService.MouseIconEnabled = OldMouseIconState
                         Cursor:Destroy()
                         CursorOutline:Destroy()
                         RunService:UnbindFromRenderStep("LinoriaCursor")

@@ -1,7 +1,7 @@
 -- New example script written by wally
 -- You can suggest changes with a pull request or something
 
-local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+local repo = 'https://raw.githubusercontent.com/RectangularObject/LinoriaLib/main/'
 
 local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
 local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
@@ -105,6 +105,7 @@ local MyButton = LeftGroupBox:AddButton({
     Text = 'Button',
     Func = function()
         print('You clicked a button!')
+        Library:Notify("This is a notification")
     end,
     DoubleClick = false,
     Tooltip = 'This is the main button'
@@ -114,6 +115,7 @@ local MyButton2 = MyButton:AddButton({
     Text = 'Sub button',
     Func = function()
         print('You clicked a sub button!')
+        Library:Notify("This is a notification with sound", nil, 4590657391)
     end,
     DoubleClick = true, -- You will have to click this button twice to trigger the callback
     Tooltip = 'This is the sub button (double click me!)'
@@ -377,7 +379,10 @@ Depbox:AddToggle('DepboxToggle', { Text = 'Sub-dependency box toggle' });
 -- When we do this, our SupDepbox automatically relies on the visiblity of the Depbox - on top of whatever additional dependencies we set
 local SubDepbox = Depbox:AddDependencyBox();
 SubDepbox:AddSlider('DepboxSlider', { Text = 'Slider', Default = 50, Min = 0, Max = 100, Rounding = 0 });
-SubDepbox:AddDropdown('DepboxDropdown', { Text = 'Dropdown', Default = 1, Values = {'a', 'b', 'c'} });
+SubDepbox:AddDropdown('DepboxDropdown', { Text = 'Dropdown', Default = 1, Values = {'a', 'b', 'ĉ'} });
+
+local SecretDepbox = SubDepbox:AddDependencyBox();
+SecretDepbox:AddLabel('You found a seĉret!')
 
 Depbox:SetupDependencies({
     { Toggles.ControlToggle, true } -- We can also pass `false` if we only want our features to show when the toggle is off!
@@ -386,6 +391,10 @@ Depbox:SetupDependencies({
 SubDepbox:SetupDependencies({
     { Toggles.DepboxToggle, true }
 });
+
+SecretDepbox:SetupDependencies({
+    { Options.DepboxDropdown, 'ĉ'} -- In the case of dropdowns, it will automatically check if the specified dropdown value is selected
+})
 
 -- Library functions
 -- Sets the watermark visibility

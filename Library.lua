@@ -3940,6 +3940,12 @@ function Library:CreateWindow(...)
 			end
 		end;
 
+		for _, Option in Options do
+			if Option.Type == 'Dropdown' then
+				Option:CloseDropdown()
+			end
+		end
+
 		for _, Desc in next, Outer:GetDescendants() do
 			local Properties = {};
 

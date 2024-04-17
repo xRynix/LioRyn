@@ -1,4 +1,5 @@
-local httpService = game:GetService('HttpService')
+local cloneref = cloneref or function(o) return o end
+local httpService = cloneref(game:GetService('HttpService'))
 local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 local getassetfunc = getcustomasset or getsynasset
 local ThemeManager = {} do
@@ -25,7 +26,7 @@ local ThemeManager = {} do
 		if string.sub(tostring(webmLink), -5) == ".webm" then
 			local CurrentSaved = ""
 			if isfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt') then
-				 CurrentSaved = readfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt')
+				CurrentSaved = readfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt')
 			end
 			local VideoData = nil;
 			if CurrentSaved == tostring(webmLink) then
@@ -121,7 +122,7 @@ local ThemeManager = {} do
 				isDefault = false;
 			end
 		elseif self.BuiltInThemes[self.DefaultTheme] then
-		 	theme = self.DefaultTheme
+		theme = self.DefaultTheme
 		end
 
 		if isDefault then
@@ -180,7 +181,7 @@ local ThemeManager = {} do
 
 		groupbox:AddInput('ThemeManager_CustomThemeName', { Text = 'Custom theme name' })
 		groupbox:AddButton('Create theme', function() 
-			self:SaveCustomTheme(Options.ThemeManager_CustomThemeName.Value)
+			self:SaveCustomTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeName.Value)
 
 			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
 			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValue(nil)

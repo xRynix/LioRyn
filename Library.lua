@@ -3240,7 +3240,7 @@ function Library:CreateWindow(...)
 	end
 
 	if type(Config.Title) ~= 'string' then Config.Title = 'No title' end
-	if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 0 end
+	if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 1 end
 	if type(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
 	if type(Config.ShowCustomCursor) ~= 'boolean' then Library.ShowCustomCursor = true else Library.ShowCustomCursor = Config.ShowCustomCursor end
 
@@ -3250,6 +3250,10 @@ function Library:CreateWindow(...)
 		if Library.IsMobile then
 			Config.Size = UDim2.fromOffset(550, 400)
 		end
+	end
+
+	if Config.TabPadding <= 0 then
+		Config.TabPadding = 1
 	end
 
 	if Config.Center then
@@ -3337,7 +3341,7 @@ function Library:CreateWindow(...)
 		AutomaticCanvasSize = Enum.AutomaticSize.XY;
 		ScrollBarThickness = 0;
 		BackgroundTransparency = 1;
-		Position = UDim2.new(0, 2, 0, 4);
+		Position = UDim2.new(0, 8 - Config.TabPadding, 0, 4);
 		Size = UDim2.new(1, -10, 0, 26);
 		ZIndex = 1;
 		Parent = MainSectionInner;

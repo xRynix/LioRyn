@@ -2726,7 +2726,8 @@ do
 
                             Table:UpdateButton();
                             Dropdown:Display();
-
+                            
+                            Library:UpdateDependencyBoxes();
                             Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
                             Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
 
@@ -2925,7 +2926,7 @@ do
                 local Elem = Dependency[1];
                 local Value = Dependency[2];
 
-                if Elem.Type == 'Toggle' and Elem.Value ~= Value then
+                if if Elem.Multi then not table.find(Elem:GetActiveValues(), Value) else Elem.Value ~= Value then
                     Holder.Visible = false;
                     Depbox:Resize();
                     return;

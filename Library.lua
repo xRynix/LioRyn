@@ -1402,7 +1402,7 @@ do
 			local Key, Mode = Data[1], Data[2];
 			DisplayLabel.Text = Key;
 			KeyPicker.Value = Key;
-			ModeButtons[Mode]:Select();
+			if ModeButtons[Mode] then ModeButtons[Mode]:Select(); end
 			KeyPicker:Update();
 		end;
 

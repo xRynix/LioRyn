@@ -2111,11 +2111,13 @@ do
 		end
 
 		function Toggle:Display()
+			setthreadidentity(5)
 			ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
 			ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
 
 			Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
 			Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+			setthreadidentity(8)
 		end;
 
 		function Toggle:OnChanged(Func)

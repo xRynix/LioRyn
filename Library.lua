@@ -3252,8 +3252,9 @@ function Library:CreateWindow(...)
 	if typeof(Config.Size) ~= 'UDim2' then 
 		Config.Size = UDim2.fromOffset(550, 600)
 		if Library.IsMobile then
-			if (workspace.CurrentCamera.ViewportSize.Y - 30) >= 200 then
-				Config.Size = UDim2.fromOffset(550, workspace.CurrentCamera.ViewportSize.Y - 30)
+			local NewSize = (workspace.CurrentCamera.ViewportSize.Y - 35);
+			if NewSize >= 200 and NewSize <= 600 then
+				Config.Size = UDim2.fromOffset(550, NewSize)
 			else
 				Config.Size = Library.MinSize
 			end

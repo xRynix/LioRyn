@@ -1545,21 +1545,25 @@ local BaseGroupbox = {};
 do
 	local Funcs = {};
 
-	function Funcs:AddBlank(Size)
+	function Funcs:AddBlank(Size, Visible)
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		Library:Create('Frame', {
+		return Library:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(1, 0, 0, Size);
+            Visible = typeof(Visible) ~= "boolean" and true or Visible;
 			ZIndex = 1;
 			Parent = Container;
 		});
 	end;
 
 	function Funcs:AddLabel(Text, DoesWrap)
-		local Label = {};
+		local Label = {
 
+        };
+
+        local Blank = nil;
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
@@ -1604,7 +1608,7 @@ do
 			setmetatable(Label, BaseAddons);
 		end
 
-		Groupbox:AddBlank(5);
+		Blank = Groupbox:AddBlank(5);
 		Groupbox:Resize();
 
 		return Label;
@@ -2031,12 +2035,14 @@ do
 		local Toggle = {
 			Value = Info.Default or false;
 			Type = 'Toggle';
+            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
 
 			Callback = Info.Callback or function(Value) end;
 			Addons = {},
 			Risky = Info.Risky,
 		};
 
+        local Blank;
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
@@ -2044,6 +2050,7 @@ do
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(0, 13, 0, 13);
+            Visible = Toggle.Visible;
 			ZIndex = 5;
 			Parent = Container;
 		});
@@ -2141,6 +2148,15 @@ do
 			Library:UpdateDependencyBoxes();
 		end;
 
+        function Toggle:SetVisible(Visibility)
+            Toggle.Visible = Visibility;
+
+            ToggleOuter.Visible = Toggle.Visible;
+            if Blank then Blank.Visible = Toggle.Visible end;
+
+            Groupbox:Resize();
+        end;
+
 		ToggleRegion.InputBegan:Connect(function(Input)
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
 				for _, Addon in next, Toggle.Addons do
@@ -2158,7 +2174,7 @@ do
 		end
 
 		Toggle:Display();
-		Groupbox:AddBlank(Info.BlankSize or 5 + 2);
+		Blank = Groupbox:AddBlank(Info.BlankSize or 5 + 2, Toggle.Visible);
 		Groupbox:Resize();
 
 		Toggle.TextLabel = ToggleLabel;
@@ -2186,30 +2202,35 @@ do
 			Rounding = Info.Rounding;
 			MaxSize = 232;
 			Type = 'Slider';
+            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
 			Callback = Info.Callback or function(Value) end;
 		};
 
+        local Blanks = {};
+        local SliderText = nil;
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
 		if not Info.Compact then
-			Library:CreateLabel({
+			SliderText = Library:CreateLabel({
 				Size = UDim2.new(1, 0, 0, 10);
 				TextSize = 14;
 				Text = Info.Text;
 				TextXAlignment = Enum.TextXAlignment.Left;
 				TextYAlignment = Enum.TextYAlignment.Bottom;
+                Visible = Slider.Visible;
 				ZIndex = 5;
 				Parent = Container;
 			});
 
-			Groupbox:AddBlank(3);
+			table.insert(Blanks, Groupbox:AddBlank(3, Slider.Visible));
 		end
 
 		local SliderOuter = Library:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(1, -4, 0, 13);
+            Visible = Slider.Visible;
 			ZIndex = 5;
 			Parent = Container;
 		});
@@ -2351,6 +2372,19 @@ do
 			Library:SafeCallback(Slider.Changed, Slider.Value);
 		end;
 
+        function Slider:SetVisible(Visibility)
+            Slider.Visible = Visibility;
+
+            if SliderText then SliderText.Visible = Slider.Visible end;
+            SliderOuter.Visible = Slider.Visible;
+
+            for _, Blank in pairs(Blanks) do
+                Blank.Visible = Slider.Visible
+            end
+
+            Groupbox:Resize();
+        end;
+
 		SliderInner.InputBegan:Connect(function(Input)
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
 				if Library.IsMobile then
@@ -2410,7 +2444,7 @@ do
 		end);
 
 		Slider:Display();
-		Groupbox:AddBlank(Info.BlankSize or 6);
+		table.insert(Blanks, Groupbox:AddBlank(Info.BlankSize or 6, Slider.Visible));
 		Groupbox:Resize();
 
 		Options[Idx] = Slider;

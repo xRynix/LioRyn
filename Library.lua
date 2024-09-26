@@ -14,11 +14,10 @@ local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 local GetHUI = gethui or (function() return CoreGui end);
 
 local ScreenGui = Instance.new('ScreenGui');
---ProtectGui(ScreenGui);
+ProtectGui(ScreenGui);
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
-local Parented, _ = pcall(function() ScreenGui.Parent = GetHUI() end)
-if not Parented then ScreenGui.Parent = LocalPlayer.PlayerGui end
+ScreenGui.Parent = GetHUI();
 
 local Toggles = {};
 local Options = {};

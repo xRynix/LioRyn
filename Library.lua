@@ -17,7 +17,8 @@ local ScreenGui = Instance.new('ScreenGui');
 --ProtectGui(ScreenGui);
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
-ScreenGui.Parent = GetHUI();
+local Parented, _ = pcall(function() ScreenGui.Parent = GetHUI() end)
+if not Parented then ScreenGui.Parent = LocalPlayer.PlayerGui end
 
 local Toggles = {};
 local Options = {};

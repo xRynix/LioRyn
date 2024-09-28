@@ -141,7 +141,6 @@ local ThemeManager = {} do
 			return false, 'no config file is selected'
 		end
 
-		print(name)
 		local file = self.Folder .. '/themes/' .. name .. '.json'
 		if not isfile(file) then
 			file = self.Folder .. '/themes/' .. name
@@ -198,10 +197,10 @@ local ThemeManager = {} do
 			self:ApplyTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value) 
 		end)
 		groupbox:AddButton('Overwrite theme', function()
-			self:SaveCustomTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeName.Value)
+			self:SaveCustomTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value)
 		end)
 		groupbox:AddButton('Delete theme', function()
-			local name = getgenv().Linoria.Options.ThemeManager_CustomThemeName.Value
+			local name = getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value
 
 			local success, err = self:Delete(name)
 			if not success then

@@ -141,6 +141,7 @@ local ThemeManager = {} do
 			return false, 'no config file is selected'
 		end
 
+		print(name)
 		local file = self.Folder .. '/themes/' .. name .. '.json'
 		if not isfile(file) then
 			file = self.Folder .. '/themes/' .. name

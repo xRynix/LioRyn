@@ -352,4 +352,5 @@ local ThemeManager = {} do
 	ThemeManager:BuildFolderTree()
 end
 
+getgenv().LinoriaThemeManager = ThemeManager
 return ThemeManager

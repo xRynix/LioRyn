@@ -140,9 +140,12 @@ local ThemeManager = {} do
 		if (not name) then
 			return false, 'no config file is selected'
 		end
-		
+
 		local file = self.Folder .. '/themes/' .. name .. '.json'
-		if not isfile(file) then return false, 'invalid file' end
+		if not isfile(file) then
+			file = self.Folder .. '/themes/' .. name
+			if not isfile(file) then return false, 'invalid file' end
+		end
 
 		local success, decoded = pcall(delfile, file)
 		if not success then return false, 'delete file error' end

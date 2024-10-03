@@ -1630,7 +1630,7 @@ do
         }
 
         -- Debugging (sorry for polluting git history :content:)
-        table.foreach(Button, print); local args = {...}; table.foreach(args[1], print)
+        table.foreach(Button, print); local args = {...}; if typeof(args[1]) == "table" then table.foreach(args[1], print) else print(args[1]) end
 
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 

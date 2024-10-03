@@ -156,7 +156,13 @@ function Library:Create(Class, Properties)
     end;
 
     for Property, Value in next, Properties do
-        _Instance[Property] = Value;
+        local success, err = pcall(function()
+            _Instance[Property] = Value;
+        end);
+
+        if (not success) then
+            warn(err);
+        end;
     end;
 
     return _Instance;
@@ -165,7 +171,7 @@ end;
 function Library:ApplyTextStroke(Inst)
     Inst.TextStrokeTransparency = 1;
 
-    Library:Create('UIStroke', {
+    return Library:Create('UIStroke', {
         Color = Color3.new(0, 0, 0);
         Thickness = 1;
         LineJoinMode = Enum.LineJoinMode.Miter;
@@ -3637,6 +3643,75 @@ function Library:CreateWindow(...)
             Parent = TabContainer;
         });
 
+        local TopBar, TopBarInner, TopBarLabel, TopBarTextLabel; do
+            TopBar = Library:Create('Frame', {
+                BackgroundColor3 = Library.BackgroundColor;
+                BorderColor3 = Color3.fromRGB(248, 51, 51);
+                BorderMode = Enum.BorderMode.Inset;
+                Position = UDim2.new(0, 8, 0, 7);
+                Size = UDim2.new(1, -14, 0, 0);
+                ZIndex = 2;
+                Parent = TabFrame;
+                Visible = false;
+            });
+
+            TopBarInner = Library:Create('Frame', {
+                BackgroundColor3 = Color3.fromRGB(117, 22, 17);
+                BorderColor3 = Color3.new();
+                -- BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, -2, 1, -2);
+                Position = UDim2.new(0, 1, 0, 1);
+                ZIndex = 4;
+                Parent = TopBar;
+            });
+
+            local TopBarHighlight = Library:Create('Frame', {
+                BackgroundColor3 = Color3.fromRGB(255, 75, 75);
+                BorderSizePixel = 0;
+                Size = UDim2.new(1, 0, 0, 2);
+                ZIndex = 5;
+                Parent = TopBarInner;
+            });
+
+            TopBarLabel = Library:Create('TextLabel', {
+                BackgroundTransparency = 1;
+                Font = Library.Font;
+                TextStrokeTransparency = 0;
+
+                Size = UDim2.new(1, 0, 0, 18);
+                Position = UDim2.new(0, 4, 0, 2);
+                TextSize = 14;
+                Text = "Text";
+                TextXAlignment = Enum.TextXAlignment.Left;
+                TextColor3 = Color3.fromRGB(255, 55, 55);
+                ZIndex = 5;
+                Parent = TopBarInner;
+            });
+
+            local TopBarLabelStroke = Library:ApplyTextStroke(TopBarLabel);
+            TopBarLabelStroke.Color = Color3.fromRGB(174, 3, 3);
+
+            TopBarTextLabel = Library:CreateLabel({
+                Position =  UDim2.new(0, 4, 0.35, 0);
+                Size = UDim2.new(1, -4, 0, 15);
+                TextSize = 14;
+                Text = "Text";
+                TextWrapped = true,
+                TextXAlignment = Enum.TextXAlignment.Left;
+                TextYAlignment = Enum.TextYAlignment.Top;
+                ZIndex = 5;
+                Parent = TopBarInner;
+            });
+            
+            Library:Create('Frame', {
+                BackgroundTransparency = 1;
+                Size = UDim2.new(1, 0, 0, 5);
+                Visible = true;
+                ZIndex = 1;
+                Parent = TopBarInner;
+            });
+        end
+        
         local LeftSide = Library:Create('ScrollingFrame', {
             BackgroundTransparency = 1;
             BorderSizePixel = 0;
@@ -3716,6 +3791,53 @@ function Library:CreateWindow(...)
             end);
         end;
 
+        function Tab:Resize()
+            if TopBar.Visible == true then
+                local Size = 10;
+
+                for _, Element in next, TopBarInner:GetChildren() do
+                    if (not Element:IsA('UIListLayout')) and Element.Visible then
+                        Size = Size + Element.Size.Y.Offset;
+                    end;
+                end;
+                
+                TopBar.Size = UDim2.new(1, -12 + 2, 0, Size);
+                Size = Size + 10;
+                
+                LeftSide.Position = UDim2.new(0, 8 - 1, 0, 8 - 1 + Size);
+                LeftSide.Size = UDim2.new(0.5, -12 + 2, 1, -14 - Size);
+        
+                RightSide.Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1 + Size);
+                RightSide.Size = UDim2.new(0.5, -12 + 2, 1, -14 - Size);
+            else
+                LeftSide.Position = UDim2.new(0, 8 - 1, 0, 8 - 1);
+                LeftSide.Size = UDim2.new(0.5, -12 + 2, 1, -14);
+        
+                RightSide.Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1);
+                RightSide.Size = UDim2.new(0.5, -12 + 2, 1, -14);
+            end;
+        end;
+
+        function Tab:UpdateWarningBox(Info)
+            if typeof(Info.Visible) == "boolean" then
+                TopBar.Visible = Info.Visible;
+                Tab:Resize();
+            end;
+
+            if typeof(Info.Title) == "string" then
+                TopBarLabel.Text = Info.Title;
+            end;
+
+            if typeof(Info.Text) == "string" then
+                TopBarTextLabel.Text = Info.Text;
+        
+                local Y = select(2, Library:GetTextBounds(Info.Text, Library.Font, 14, Vector2.new(TopBarTextLabel.AbsoluteSize.X, math.huge)));
+                TopBarTextLabel.Size = UDim2.new(1, -4, 0, Y);
+
+                Tab:Resize();
+            end;
+        end;
+
         function Tab:ShowTab()
             Library.ActiveTab = Name;
             for _, Tab in next, Window.Tabs do
@@ -3726,6 +3848,8 @@ function Library:CreateWindow(...)
             TabButton.BackgroundColor3 = Library.MainColor;
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor';
             TabFrame.Visible = true;
+
+            Tab:Resize();
         end;
 
         function Tab:HideTab()
@@ -4010,7 +4134,7 @@ function Library:CreateWindow(...)
                         Tab:Show();
                         Tab:Resize();
                     end;
-                end);
+                end)
 
                 Tab.Container = Container;
                 Tabbox.Tabs[Name] = Tab;
@@ -4047,8 +4171,12 @@ function Library:CreateWindow(...)
             end;
         end);
 
+        TopBar:GetPropertyChangedSignal("Visible"):Connect(function()
+            Tab:Resize();
+        end);
+
         -- This was the first tab added, so we show it by default.
-    Library.TotalTabs = Library.TotalTabs + 1;
+        Library.TotalTabs = Library.TotalTabs + 1;
         if Library.TotalTabs == 1 then
             Tab:ShowTab();
         end;

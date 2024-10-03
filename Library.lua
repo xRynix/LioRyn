@@ -151,7 +151,7 @@ end;
 function Library:Create(Class, Properties)
     local _Instance = Class;
 
-    if type(Class) == 'string' then
+    if typeof(Class) == 'string' then
         _Instance = Instance.new(Class);
     end;
 
@@ -562,9 +562,9 @@ function Library:UpdateColorsUsingRegistry()
 
     for Idx, Object in next, Library.Registry do
         for Property, ColorIdx in next, Object.Properties do
-            if type(ColorIdx) == 'string' then
+            if typeof(ColorIdx) == 'string' then
                 Object.Instance[Property] = Library[ColorIdx];
-            elseif type(ColorIdx) == 'function' then
+            elseif typeof(ColorIdx) == 'function' then
                 Object.Instance[Property] = ColorIdx()
             end
         end;
@@ -617,7 +617,7 @@ do
             Value = Info.Default;
             Transparency = Info.Transparency or 0;
             Type = 'ColorPicker';
-            Title = type(Info.Title) == 'string' and Info.Title or 'Color picker',
+            Title = typeof(Info.Title) == 'string' and Info.Title or 'Color picker',
             Callback = Info.Callback or function(Color) end;
         };
 
@@ -946,7 +946,7 @@ do
             end
 
             function ContextMenu:AddOption(Str, Callback)
-                if type(Callback) ~= 'function' then
+                if typeof(Callback) ~= 'function' then
                     Callback = function() end
                 end
 
@@ -1628,7 +1628,7 @@ do
         local Button = {};
         local function ProcessButtonParams(Class, Obj, ...)
             local Props = select(1, ...)
-            if type(Props) == 'table' then
+            if typeof(Props) == 'table' then
                 Obj.Text = Props.Text
                 Obj.Func = Props.Func
                 Obj.DoubleClick = Props.DoubleClick
@@ -1638,7 +1638,7 @@ do
                 Obj.Func = select(2, ...)
             end
 
-            assert(type(Obj.Func) == 'function', 'AddButton: `Func` callback is missing.');
+            assert(typeof(Obj.Func) == 'function', 'AddButton: `Func` callback is missing.');
         end
 
         ProcessButtonParams('Button', Button, ...)
@@ -1702,7 +1702,7 @@ do
                 local bindable = Instance.new('BindableEvent')
                 local connection = event:Once(function(...)
 
-                    if type(validator) == 'function' and validator(...) then
+                    if typeof(validator) == 'function' and validator(...) then
                         bindable:Fire(true)
                     else
                         bindable:Fire(false)
@@ -1767,7 +1767,7 @@ do
         InitEvents(Button)
 
         function Button:AddTooltip(tooltip)
-            if type(tooltip) == 'string' then
+            if typeof(tooltip) == 'string' then
                 Library:AddToolTip(tooltip, self.Outer)
             end
             return self
@@ -1788,13 +1788,13 @@ do
             SubButton.Outer.Parent = self.Outer
 
             function SubButton:AddTooltip(tooltip)
-                if type(tooltip) == 'string' then
+                if typeof(tooltip) == 'string' then
                     Library:AddToolTip(tooltip, self.Outer)
                 end
                 return SubButton
             end
 
-            if type(SubButton.Tooltip) == 'string' then
+            if typeof(SubButton.Tooltip) == 'string' then
                 SubButton:AddTooltip(SubButton.Tooltip)
             end
 
@@ -1802,7 +1802,7 @@ do
             return SubButton
         end
 
-        if type(Button.Tooltip) == 'string' then
+        if typeof(Button.Tooltip) == 'string' then
             Button:AddTooltip(Button.Tooltip)
         end
 
@@ -1903,7 +1903,7 @@ do
             { BorderColor3 = 'Black' }
         );
 
-        if type(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == 'string' then
             Library:AddToolTip(Info.Tooltip, TextBoxOuter)
         end
 
@@ -2122,7 +2122,7 @@ do
             Toggle:Display();
         end;
 
-        if type(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == 'string' then
             Library:AddToolTip(Info.Tooltip, ToggleRegion)
         end
 
@@ -2305,7 +2305,7 @@ do
             { BorderColor3 = 'Black' }
         );
 
-        if type(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == 'string' then
             Library:AddToolTip(Info.Tooltip, SliderOuter)
         end
 
@@ -2572,7 +2572,7 @@ do
             { BorderColor3 = 'Black' }
         );
 
-        if type(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == 'string' then
             Library:AddToolTip(Info.Tooltip, DropdownOuter)
         end
 
@@ -2884,19 +2884,19 @@ do
 
         local Defaults = {}
 
-        if type(Info.Default) == 'string' then
+        if typeof(Info.Default) == 'string' then
             local Idx = table.find(Dropdown.Values, Info.Default)
             if Idx then
                 table.insert(Defaults, Idx)
             end
-        elseif type(Info.Default) == 'table' then
+        elseif typeof(Info.Default) == 'table' then
             for _, Value in next, Info.Default do
                 local Idx = table.find(Dropdown.Values, Value)
                 if Idx then
                     table.insert(Defaults, Idx)
                 end
             end
-        elseif type(Info.Default) == 'number' and Dropdown.Values[Info.Default] ~= nil then
+        elseif typeof(Info.Default) == 'number' and Dropdown.Values[Info.Default] ~= nil then
             table.insert(Defaults, Info.Default)
         end
 
@@ -2983,7 +2983,7 @@ do
 
         function Depbox:SetupDependencies(Dependencies)
             for _, Dependency in next, Dependencies do
-                assert(type(Dependency) == 'table', 'SetupDependencies: Dependency is not of type `table`.');
+                assert(typeof(Dependency) == 'table', 'SetupDependencies: Dependency is not of type `table`.');
                 assert(Dependency[1], 'SetupDependencies: Dependency is missing element argument.');
                 assert(Dependency[2] ~= nil, 'SetupDependencies: Dependency is missing value argument.');
             end;
@@ -3410,18 +3410,18 @@ function Library:CreateWindow(...)
     local Arguments = { ... }
     local Config = { AnchorPoint = Vector2.zero }
 
-    if type(...) == 'table' then
+    if typeof(...) == 'table' then
         Config = ...;
     else
         Config.Title = Arguments[1]
         Config.AutoShow = Arguments[2] or false;
     end
 
-    if type(Config.Title) ~= 'string' then Config.Title = 'No title' end
-    if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 1 end
-    if type(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
-    if type(Config.NotifySide) ~= 'string' then Library.NotifySide = 'Left' else Library.NotifySide = Config.NotifySide end
-    if type(Config.ShowCustomCursor) ~= 'boolean' then Library.ShowCustomCursor = true else Library.ShowCustomCursor = Config.ShowCustomCursor end
+    if typeof(Config.Title) ~= 'string' then Config.Title = 'No title' end
+    if typeof(Config.TabPadding) ~= 'number' then Config.TabPadding = 1 end
+    if typeof(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
+    if typeof(Config.NotifySide) ~= 'string' then Library.NotifySide = 'Left' else Library.NotifySide = Config.NotifySide end
+    if typeof(Config.ShowCustomCursor) ~= 'boolean' then Library.ShowCustomCursor = true else Library.ShowCustomCursor = Config.ShowCustomCursor end
 
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
     if typeof(Config.Size) ~= 'UDim2' then 
@@ -4294,7 +4294,7 @@ function Library:CreateWindow(...)
     end
 
     Library:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
-        if type(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' then
+        if typeof(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' then
             if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == Library.ToggleKeybind.Value then
                 task.spawn(Library.Toggle)
             end

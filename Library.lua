@@ -15,7 +15,7 @@ local ProtectGui = protectgui or (function() end);
 local GetHUI = gethui or (function() return CoreGui end);
 
 local ScreenGui = Instance.new('ScreenGui');
-pcall(ProtectGui, ScreenGui); 
+pcall(ProtectGui, ScreenGui);
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);

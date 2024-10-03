@@ -1624,8 +1624,7 @@ do
     end;
 
     function Funcs:AddButton(...)
-        if typeof(...) == "table" then table.foreach(..., print) end
-        local Button = typeof(...) == "table" and {...} or {
+        local Button = typeof(select(1, ...)) == "table" and select(1, ...) or {
             Text = select(1, ...),
             Func = select(2, ...)
         }
@@ -1764,9 +1763,12 @@ do
 
 
         function Button:AddButton(...)
-            local SubButton = {}
-
-            ProcessButtonParams('SubButton', SubButton, ...)
+            local SubButton = typeof(select(1, ...)) == "table" and select(1, ...) or {
+                Text = select(1, ...),
+                Func = select(2, ...)
+            }
+    
+            assert(typeof(SubButton.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
             self.Outer.Size = UDim2.new(0.5, -2, 0, 20)
 

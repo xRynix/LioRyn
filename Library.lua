@@ -1624,24 +1624,12 @@ do
     end;
 
     function Funcs:AddButton(...)
-        -- TODO: Eventually redo this
-        local Button = {};
-        local function ProcessButtonParams(Class, Obj, ...)
-            local Props = select(1, ...)
-            if typeof(Props) == 'table' then
-                Obj.Text = Props.Text
-                Obj.Func = Props.Func
-                Obj.DoubleClick = Props.DoubleClick
-                Obj.Tooltip = Props.Tooltip
-            else
-                Obj.Text = select(1, ...)
-                Obj.Func = select(2, ...)
-            end
+        local Button = typeof(...) == "table" and {...} or {
+            Text = select(1, ...),
+            Func = select(2, ...)
+        }
 
-            assert(typeof(Obj.Func) == 'function', 'AddButton: `Func` callback is missing.');
-        end
-
-        ProcessButtonParams('Button', Button, ...)
+        assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
         local Groupbox = self;
         local Container = Groupbox.Container;

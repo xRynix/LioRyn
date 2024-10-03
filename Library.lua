@@ -1624,6 +1624,7 @@ do
     end;
 
     function Funcs:AddButton(...)
+        if typeof(...) == "table" then table.foreach(..., print) end
         local Button = typeof(...) == "table" and {...} or {
             Text = select(1, ...),
             Func = select(2, ...)

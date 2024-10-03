@@ -1629,6 +1629,9 @@ do
             Func = select(2, ...)
         }
 
+        -- Debugging (sorry for polluting git history :content:)
+        table.foreach(Button, print); local args = {...}; table.foreach(args[1], print)
+
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
         local Groupbox = self;

@@ -15,7 +15,7 @@ local ProtectGui = protectgui or (function() end);
 local GetHUI = gethui or (function() return CoreGui end);
 
 local ScreenGui = Instance.new('ScreenGui');
-pcall(ProtectGui, ScreenGui); 
+pcall(ProtectGui, ScreenGui); x
 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);
@@ -1622,104 +1622,13 @@ do
 
         return Label;
     end;
-
-    local function debug(node, tablename, spaces)
-    	if type(node) == "table" then
-    		local cache, stack, output = {},{},{}
-    		local depth = 1
-    		local space
-    		if spaces == true or nil then
-    			space = "\n"
-    		elseif spaces == nil then
-    			space = "\n"
-    		else
-    			space = ""
-    		end
-    		local output_str = "{"..space
-    		while true do
-    			local size = 0
-    			for k,v in pairs(node) do
-    				size = size + 1
-    			end
-    			local cur_index = 1
-    			for k,v in pairs(node) do
-    				if (cache[node] == nil) or (cur_index >= cache[node]) then
-    					if (string.find(output_str,"}",output_str:len())) then
-    						output_str = output_str .. ","..space
-    					elseif not (string.find(output_str,space,output_str:len())) then
-    						output_str = output_str .. space
-    					end
-    					table.insert(output,output_str)
-    					output_str = ""
-    					local key
-    					if (type(k) == "number" or type(k) == "boolean") then
-    						key = "["..tostring(k).."]"
-    					else
-    						key = "[\""..tostring(k).."\"]"
-    					end
-    
-    					if (type(v) == "number" or type(v) == "boolean") then
-    						output_str = output_str .. string.rep('\t',depth) .. key .. " = "..tostring(v)
-    					elseif (type(v) == "table") then
-    						output_str = output_str .. string.rep('\t',depth) .. key .. " = {"..space
-    						table.insert(stack,node)
-    						table.insert(stack,v)
-    						cache[node] = cur_index+1
-    						break
-    					else
-    						output_str = output_str .. string.rep('\t',depth) .. key .. " = \""..tostring(v).."\""
-    					end
-    
-    					if (cur_index == size) then
-    						output_str = output_str .. space .. string.rep('\t',depth-1) .. "}"
-    					else
-    						output_str = output_str .. ","
-    					end
-    				else
-    					if (cur_index == size) then
-    						output_str = output_str .. space .. string.rep('\t',depth-1) .. "}"
-    					end
-    				end
-    
-    				cur_index = cur_index + 1
-    			end
-    			if (size == 0) then
-    				output_str = output_str .. space .. string.rep('\t',depth-1) .. "}"
-    			end
-    			if (#stack > 0) then
-    				node = stack[#stack]
-    				stack[#stack] = nil
-    				depth = cache[node] == nil and depth + 1 or depth - 1
-    			else
-    				break
-    			end
-    		end
-    		table.insert(output,output_str)
-    		output_str = table.concat(output)
-    		if spaces == false then
-    			output_str = output_str:gsub("	", "")
-    			task.wait()
-    			output_str = output_str:gsub(" ", "")
-    		end
-    		if tablename == nil then
-    			print("local table = " .. output_str)
-    		else
-    			print("local "..tostring(tablename).." = " .. output_str)
-    		end
-    	else
-    		print(node)
-    	end
-    end
     
     function Funcs:AddButton(...)
         local Button = typeof(select(1, ...)) == "table" and select(1, ...) or {
             Text = select(1, ...),
             Func = select(2, ...)
         }
-
-        -- Debugging (sorry for polluting git history :content:)
-        table.foreach(Button, print); local args = {...}; if typeof(args[1]) == "table" then print("BUTTON ARGUMENT DEBUG");debug(args[1]) end print("BUTTON TABLE DEBUG"); debug(Button)
-
+        
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
         local Groupbox = self;

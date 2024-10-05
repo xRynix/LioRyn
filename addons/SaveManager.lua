@@ -1,4 +1,4 @@
-local cloneref = cloneref or function(o) return o end
+.local cloneref = cloneref or function(o) return o end
 local httpService = cloneref(game:GetService('HttpService'))
 
 if copyfunction and isfolder then -- fix for mobile executors :/
@@ -205,10 +205,13 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:RefreshConfigList()
+		local out = {}
+		
+		local s, e = pcall(function()
 		SaveManager:CheckFolderTree()
 		local list = listfiles(self.Folder .. '/settings')
 
-		local out = {}
+		--local out = {}
 		for i = 1, #list do
 			local file = list[i]
 			if file:sub(-5) == '.json' then
@@ -228,6 +231,8 @@ local SaveManager = {} do
 				end
 			end
 		end
+	        end)
+                if not s then warn(e) end
 		
 		return out
 	end

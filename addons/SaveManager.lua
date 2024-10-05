@@ -1,4 +1,4 @@
-.local cloneref = cloneref or function(o) return o end
+local cloneref = cloneref or function(o) return o end
 local httpService = cloneref(game:GetService('HttpService'))
 
 if copyfunction and isfolder then -- fix for mobile executors :/

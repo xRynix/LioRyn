@@ -201,30 +201,39 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:RefreshConfigList()
-		SaveManager:CheckFolderTree()
-		local list = listfiles(self.Folder .. '/settings')
-
-		local out = {}
-		for i = 1, #list do
-			local file = list[i]
-			if file:sub(-5) == '.json' then
-				-- i hate this but it has to be done ...
-
-				local pos = file:find('.json', 1, true)
-				local start = pos
-
-				local char = file:sub(pos, pos)
-				while char ~= '/' and char ~= '\\' and char ~= '' do
-					pos = pos - 1
-					char = file:sub(pos, pos)
-				end
-
-				if char == '/' or char == '\\' then
-					table.insert(out, file:sub(pos + 1, start - 1))
+		local success, data = pcall(function()
+			SaveManager:CheckFolderTree()
+			local list = listfiles(self.Folder .. '/settings')
+	
+			local out = {}
+			for i = 1, #list do
+				local file = list[i]
+				if file:sub(-5) == '.json' then
+					-- i hate this but it has to be done ...
+	
+					local pos = file:find('.json', 1, true)
+					local start = pos
+	
+					local char = file:sub(pos, pos)
+					while char ~= '/' and char ~= '\\' and char ~= '' do
+						pos = pos - 1
+						char = file:sub(pos, pos)
+					end
+	
+					if char == '/' or char == '\\' then
+						table.insert(out, file:sub(pos + 1, start - 1))
+					end
 				end
 			end
+			return out
+		end)
+
+		if (not success) then
+			if self.Library then self.Library:Notify('Failed to load config list: ' .. tostring(data)) end
+			return {}
 		end
-		return out
+					
+		return data
 	end
 
 	function SaveManager:SetLibrary(library)
@@ -245,7 +254,6 @@ local SaveManager = {} do
 			self.Library:Notify(string.format('Auto loaded config %q', name))
 		end
 	end
-
 
 	function SaveManager:BuildConfigSection(tab)
 		assert(self.Library, 'Must set SaveManager.Library')

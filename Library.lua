@@ -67,7 +67,7 @@ local Library = {
 
     NotifySide = "Left";
     ShowCustomCursor = true; 
-    ShowToggleFrameInKeybinds = false;
+    ShowToggleFrameInKeybinds = true;
 
     VideoLink = "";
     TotalTabs = 0;
@@ -1348,131 +1348,116 @@ do
 
         -- Keybinds Text
         local KeybindsToggle = {}
-        local KeybindsToggleNormal = {}
-
         do
-            local KeybindsContainerLabel = Library:CreateLabel({
-                TextXAlignment = Enum.TextXAlignment.Left;
+            local KeybindsToggleContainer = Library:Create('Frame', {
+                BackgroundTransparency = 1;
                 Size = UDim2.new(1, 0, 0, 18);
-                TextSize = 13;
                 Visible = false;
                 ZIndex = 110;
                 Parent = Library.KeybindContainer;
-                Name = "contlabel";
-            },  true);
+                Name = "lolz";
+            });
 
-            function KeybindsToggleNormal:Display(State)
-                KeybindsContainerLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
-                Library.RegistryMap[KeybindsContainerLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
+            local KeybindsToggleOuter = Library:Create('Frame', {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Color3.new(0, 0, 0);
+                Size = UDim2.new(0, 13, 0, 13);
+                Position = UDim2.new(0, 0, 0, 6);
+                Visible = true;
+                ZIndex = 110;
+                Parent = KeybindsToggleContainer;
+            });
+
+            Library:AddToRegistry(KeybindsToggleOuter, {
+                BorderColor3 = 'Black';
+            });
+
+            local KeybindsToggleInner = Library:Create('Frame', {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 111;
+                Parent = KeybindsToggleOuter;
+            });
+
+            Library:AddToRegistry(KeybindsToggleInner, {
+                BackgroundColor3 = 'MainColor';
+                BorderColor3 = 'OutlineColor';
+            });
+
+            local KeybindsToggleLabel = Library:CreateLabel({
+                BackgroundTransparency = 1;
+                Size = UDim2.new(0, 216, 1, 0);
+                Position = UDim2.new(1, 6, 0, -1);
+                TextSize = 14;
+                Text = "";
+                TextXAlignment = Enum.TextXAlignment.Left;
+                ZIndex = 111;
+                Parent = KeybindsToggleInner;
+            });
+
+            Library:Create('UIListLayout', {
+                Padding = UDim.new(0, 4);
+                FillDirection = Enum.FillDirection.Horizontal;
+                HorizontalAlignment = Enum.HorizontalAlignment.Right;
+                SortOrder = Enum.SortOrder.LayoutOrder;
+                Parent = KeybindsToggleLabel;
+            });
+
+            local KeybindsToggleRegion = Library:Create('Frame', {
+                BackgroundTransparency = 1;
+                Size = UDim2.new(0, 170, 1, 0);
+                ZIndex = 113;
+                Parent = KeybindsToggleOuter;
+            });
+
+            Library:OnHighlight(KeybindsToggleRegion, KeybindsToggleOuter,
+                { BorderColor3 = 'AccentColor' },
+                { BorderColor3 = 'Black' },
+                function()
+                    return true
+                end
+            );
+
+            function KeybindsToggle:Display(State)
+                KeybindsToggleInner.BackgroundColor3 = State and Library.AccentColor or Library.MainColor;
+                KeybindsToggleInner.BorderColor3 = State and Library.AccentColorDark or Library.OutlineColor;
+                KeybindsToggleLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
+                
+                Library.RegistryMap[KeybindsToggleInner].Properties.BackgroundColor3 = State and 'AccentColor' or 'MainColor';
+                Library.RegistryMap[KeybindsToggleInner].Properties.BorderColor3 = State and 'AccentColorDark' or 'OutlineColor';
+                Library.RegistryMap[KeybindsToggleLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
             end;
 
-            function KeybindsToggleNormal:SetText(text)
-                KeybindsContainerLabel.Text = text
+            function KeybindsToggle:SetText(text)
+                KeybindsToggleLabel.Text = text
             end
 
-            function KeybindsToggleNormal:SetVisibility(bool)
-                KeybindsContainerLabel.Visible = bool
+            function KeybindsToggle:SetVisibility(bool)
+                KeybindsToggleContainer.Visible = bool
             end
 
-            KeybindsToggleNormal.Loaded = true;
+            function KeybindsToggle:SetNormal(bool)
+                KeybindsToggle.Normal = bool
 
-            if KeyPicker.Mode == 'Toggle' then
-                local KeybindsToggleContainer = Library:Create('Frame', {
-                    BackgroundTransparency = 1;
-                    Size = UDim2.new(1, 0, 0, 18);
-                    Visible = false;
-                    ZIndex = 110;
-                    Parent = Library.KeybindContainer;
-                });
+                KeybindsToggleOuter.BackgroundTransparency = if KeybindsToggle.Normal then 1 else 0;
 
-                local KeybindsToggleOuter = Library:Create('Frame', {
-                    BackgroundColor3 = Color3.new(0, 0, 0);
-                    BorderColor3 = Color3.new(0, 0, 0);
-                    Size = UDim2.new(0, 13, 0, 13);
-                    Position = UDim2.new(0, 0, 0, 6);
-                    Visible = true;
-                    ZIndex = 110;
-                    Parent = KeybindsToggleContainer;
-                });
+                KeybindsToggleInner.BackgroundTransparency = if KeybindsToggle.Normal then 1 else 0;
+                KeybindsToggleInner.BorderSizePixel = if KeybindsToggle.Normal then 0 else 1;
 
-                Library:AddToRegistry(KeybindsToggleOuter, {
-                    BorderColor3 = 'Black';
-                });
+                KeybindsToggleLabel.Position = if KeybindsToggle.Normal then UDim2.new(1, -13, 0, -1) else UDim2.new(1, 6, 0, -1);
+            end
 
-                local KeybindsToggleInner = Library:Create('Frame', {
-                    BackgroundColor3 = Library.MainColor;
-                    BorderColor3 = Library.OutlineColor;
-                    BorderMode = Enum.BorderMode.Inset;
-                    Size = UDim2.new(1, 0, 1, 0);
-                    ZIndex = 111;
-                    Parent = KeybindsToggleOuter;
-                });
-
-                Library:AddToRegistry(KeybindsToggleInner, {
-                    BackgroundColor3 = 'MainColor';
-                    BorderColor3 = 'OutlineColor';
-                });
-
-                local KeybindsToggleLabel = Library:CreateLabel({
-                    Size = UDim2.new(0, 216, 1, 0);
-                    Position = UDim2.new(1, 6, 0, -1);
-                    TextSize = 14;
-                    Text = "";
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    ZIndex = 111;
-                    Parent = KeybindsToggleInner;
-                });
-
-                Library:Create('UIListLayout', {
-                    Padding = UDim.new(0, 4);
-                    FillDirection = Enum.FillDirection.Horizontal;
-                    HorizontalAlignment = Enum.HorizontalAlignment.Right;
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    Parent = KeybindsToggleLabel;
-                });
-
-                local KeybindsToggleRegion = Library:Create('Frame', {
-                    BackgroundTransparency = 1;
-                    Size = UDim2.new(0, 170, 1, 0);
-                    ZIndex = 113;
-                    Parent = KeybindsToggleOuter;
-                });
-
-                Library:OnHighlight(KeybindsToggleRegion, KeybindsToggleOuter,
-                    { BorderColor3 = 'AccentColor' },
-                    { BorderColor3 = 'Black' },
-                    function()
-                        return true
-                    end
-                );
-
-                function KeybindsToggle:Display(State)
-                    KeybindsToggleInner.BackgroundColor3 = State and Library.AccentColor or Library.MainColor;
-                    KeybindsToggleInner.BorderColor3 = State and Library.AccentColorDark or Library.OutlineColor;
-                    KeybindsToggleLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
-                    
-                    Library.RegistryMap[KeybindsToggleInner].Properties.BackgroundColor3 = State and 'AccentColor' or 'MainColor';
-                    Library.RegistryMap[KeybindsToggleInner].Properties.BorderColor3 = State and 'AccentColorDark' or 'OutlineColor';
-                    Library.RegistryMap[KeybindsToggleLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
+            Library:GiveSignal(KeybindsToggleRegion.InputBegan:Connect(function(Input)
+                if KeybindsToggle.Normal == false then return end
+                if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+                    KeyPicker.Toggled = not KeyPicker.Toggled;
+                    KeyPicker:DoClick()
                 end;
+            end));
 
-                function KeybindsToggle:SetText(text)
-                    KeybindsToggleLabel.Text = text
-                end
-
-                function KeybindsToggle:SetVisibility(bool)
-                    KeybindsToggleContainer.Visible = bool
-                end
-
-                Library:GiveSignal(KeybindsToggleRegion.InputBegan:Connect(function(Input)
-                    if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-                        KeyPicker.Toggled = not KeyPicker.Toggled;
-                        KeyPicker:DoClick()
-                    end;
-                end));
-
-                KeybindsToggle.Loaded = true;
-            end;
+            KeybindsToggle.Loaded = true;
         end;
 
         local Modes = Info.Modes or { 'Always', 'Toggle', 'Hold' };
@@ -1533,48 +1518,48 @@ do
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == 'Toggle';
 
             if ShowToggle then
-            	if KeybindsToggleNormal.Loaded then KeybindsToggleNormal:SetVisibility(false); end;           
             	if KeybindsToggle.Loaded then
+            		KeybindsToggle:SetNormal(false);
                     KeybindsToggle:SetVisibility(true);       
                     KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
                     KeybindsToggle:Display(State);
                 end
             else
-                if KeybindsToggle.Loaded then KeybindsToggle:SetVisibility(false); end;           
-            	if KeybindsToggleNormal.Loaded then
-                    KeybindsToggleNormal:SetVisibility(true); 
-                    KeybindsToggleNormal:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
-                    KeybindsToggleNormal:Display(State);
+                if KeybindsToggle.Loaded then
+            		KeybindsToggle:SetNormal(true);
                 end
-            end;         
+            end;  
+            if KeybindsToggle.Loaded then
+            	if ShowToggle then KeybindsToggle:SetNormal(false); else KeybindsToggle:SetNormal(true); end;
+       
+                KeybindsToggle:SetVisibility(true);       
+                KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
+                KeybindsToggle:Display(State);
+            end
 
             local YSize = 0
             local XSize = 0
 
-            if ShowToggle then
-                for _, Frame in next, Library.KeybindContainer:GetChildren() do
-                    if Frame:IsA('Frame') and Frame.Visible then
-                        YSize = YSize + 18 + 6;
-                        local Label = Frame:FindFirstChild("TextLabel", true)
-                        if not Label then continue end
+            for _, Frame in next, Library.KeybindContainer:GetChildren() do
+                if Frame:IsA('Frame') and Frame.Visible then
+                    YSize = YSize + 18;
+                    local Label = Frame:FindFirstChild("TextLabel", true)
+                    if not Label then continue end
 
-                        if (Label.TextBounds.X > XSize) then
-                            XSize = Label.TextBounds.X + 20;
-                        end
-                    end;
+                    if (Label.TextBounds.X > XSize) then
+                        XSize = Label.TextBounds.X + 20;
+                    end
                 end;
-            else
-                for _, Label in next, Library.KeybindContainer:GetChildren() do
-                    if Label:IsA('TextLabel') and Label.Visible then
-                        YSize = YSize + 18;
-                        if (Label.TextBounds.X > XSize) then
-                            XSize = Label.TextBounds.X;
-                        end
-                    end;
-                end;
+
+                --[[if Frame:IsA('TextLabel') and Frame.Visible then
+                    YSize = YSize + 18;
+                    if (Frame.TextBounds.X > XSize) then
+                        XSize = Frame.TextBounds.X;
+                    end
+                end;--]]
             end;
 
-            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23)
+            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23 + 6)
         end;
 
         function KeyPicker:GetState()

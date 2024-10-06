@@ -4440,18 +4440,11 @@ function Library:CreateWindow(...)
             task.spawn(function()
                 if Option.Type == 'Dropdown' then
                     Option:CloseDropdown();
-                    continue
-                end
-                
-                if Option.Type == 'KeyPicker' then
+                elseif Option.Type == 'KeyPicker' then
                 	Option:SetModePickerVisibility(false);
-                    continue
-                end
-    
-                if Option.Type == 'ColorPicker' then
+                elseif Option.Type == 'ColorPicker' then
                     Option.ContextMenu:Hide();
                     Option:Hide();
-                    continue
                 end
             end)
         end

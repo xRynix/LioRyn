@@ -9,6 +9,8 @@ local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 local Options = getgenv().Linoria.Options
 local Toggles = getgenv().Linoria.Toggles
 
+Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
+
 local Window = Library:CreateWindow({
 	-- Set Center to true if you want the menu to appear in the center
 	-- Set AutoShow to true if you want the menu to appear when it is created
@@ -65,7 +67,10 @@ LeftGroupBox:AddToggle('MyToggle', {
 
 	Callback = function(Value)
 		print('[cb] MyToggle changed to:', Value)
-	end
+	end,
+
+	Visible = true, -- Fully optional (Default value = true)
+	Risky = false -- Makes the text red (the color can be changed using Library.RiskColor) (Default value = false)
 }):AddColorPicker('ColorPicker1', {
 	Default = Color3.new(1, 0, 0),
 	Title = 'Some color1', -- Optional. Allows you to have a custom color picker title (when you open it)
@@ -196,7 +201,9 @@ LeftGroupBox:AddSlider('MySlider', {
 
 	Callback = function(Value)
 		print('[cb] MySlider was changed! New value:', Value)
-	end
+	end,
+
+	Visible = true -- Fully optional (Default value = true)
 })
 
 -- Options is a table added to getgenv() by the library

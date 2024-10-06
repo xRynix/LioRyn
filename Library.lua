@@ -4388,9 +4388,7 @@ function Library:CreateWindow(...)
     local Fading = false;
     
     function Library:Toggle()
-        if Fading then
-            return;
-        end;
+        if Fading then return end;
 
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
@@ -4439,21 +4437,23 @@ function Library:CreateWindow(...)
         end;
 
         for _, Option in Options do
-            if Option.Type == 'Dropdown' then
-                Option:CloseDropdown();
-                continue
-            end
-            
-            if Option.Type == 'KeyPicker' then
-            	Option:SetModePickerVisibility(false);
-                continue
-            end
-
-            if Option.Type == 'ColorPicker' then
-                Option.ContextMenu:Hide();
-                Option:Hide();
-                continue
-            end
+            task.spawn(function()
+                if Option.Type == 'Dropdown' then
+                    Option:CloseDropdown();
+                    continue
+                end
+                
+                if Option.Type == 'KeyPicker' then
+                	Option:SetModePickerVisibility(false);
+                    continue
+                end
+    
+                if Option.Type == 'ColorPicker' then
+                    Option.ContextMenu:Hide();
+                    Option:Hide();
+                    continue
+                end
+            end)
         end
 
         for _, Desc in next, Outer:GetDescendants() do
@@ -4491,9 +4491,7 @@ function Library:CreateWindow(...)
         end;
 
         task.wait(FadeTime);
-
         Outer.Visible = Toggled;
-
         Fading = false;
     end
 
@@ -4574,7 +4572,7 @@ function Library:CreateWindow(...)
         Library:MakeDraggableUsingParent(ToggleUIButton, ToggleUIOuter);
 
         ToggleUIButton.MouseButton1Down:Connect(function()
-            task.spawn(Library.Toggle)
+            Library:Toggle()
         end)
 
         -- Lock

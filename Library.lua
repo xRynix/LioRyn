@@ -1355,7 +1355,6 @@ do
                 Visible = false;
                 ZIndex = 110;
                 Parent = Library.KeybindContainer;
-                Name = "lolz";
             });
 
             local KeybindsToggleOuter = Library:Create('Frame', {

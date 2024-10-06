@@ -1449,7 +1449,8 @@ do
             end
 
             Library:GiveSignal(KeybindsToggleRegion.InputBegan:Connect(function(Input)
-                if KeybindsToggle.Normal == false then return end
+                if KeybindsToggle.Normal then return end
+                                        
                 if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                     KeyPicker.Toggled = not KeyPicker.Toggled;
                     KeyPicker:DoClick()

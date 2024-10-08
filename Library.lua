@@ -3822,8 +3822,8 @@ function Library:CreateWindow(...)
                 BackgroundColor3 = Library.BackgroundColor;
                 BorderColor3 = Color3.fromRGB(248, 51, 51);
                 BorderMode = Enum.BorderMode.Inset;
-                Position = UDim2.new(0, 8, 0, 7);
-                Size = UDim2.new(1, -14, 0, 0);
+                Position = UDim2.new(0, 7, 0, 7);
+                Size = UDim2.new(1, -13, 0, 0);
                 ZIndex = 2;
                 Parent = TabFrame;
                 Visible = false;
@@ -3866,8 +3866,8 @@ function Library:CreateWindow(...)
             TopBarLabelStroke.Color = Color3.fromRGB(174, 3, 3);
 
             TopBarTextLabel = Library:CreateLabel({
-                Position =  UDim2.new(0, 4, 0.35, 0);
-                Size = UDim2.new(1, -4, 0, 15);
+                Position =  UDim2.new(0, 4, 0, 20);
+                Size = UDim2.new(1, -4, 0, 14);
                 TextSize = 14;
                 Text = "Text";
                 TextWrapped = true,
@@ -3967,15 +3967,20 @@ function Library:CreateWindow(...)
 
         function Tab:Resize()
             if TopBar.Visible == true then
-                local Size = 10;
+                local Size = 5;
 
                 for _, Element in next, TopBarInner:GetChildren() do
                     if (not Element:IsA('UIListLayout')) and Element.Visible then
+                    	if Element == TopBarTextLabel then
+                    		Size = Size + Element.TextBounds.Y;    
+                    		continue                     
+                        end;
+                        
                         Size = Size + Element.Size.Y.Offset;
                     end;
                 end;
                 
-                TopBar.Size = UDim2.new(1, -12 + 2, 0, Size);
+                TopBar.Size = UDim2.new(1, -13, 0, Size);
                 Size = Size + 10;
                 
                 LeftSide.Position = UDim2.new(0, 8 - 1, 0, 8 - 1 + Size);

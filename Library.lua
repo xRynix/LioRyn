@@ -52,6 +52,7 @@ local Library = {
     OpenedFrames = {};
     DependencyBoxes = {};
 
+    UnloadSignals = {};
     Signals = {};
     ScreenGui = ScreenGui;
     
@@ -630,15 +631,15 @@ function Library:Unload()
     end
 
     -- Call our unload callback, maybe to undo some hooks etc
-    if Library.OnUnload then
-        Library.OnUnload()
+    for _, UnloadCallback in pairs(Library.UnloadSignals) do
+        Library:SafeCallback(UnloadCallback)
     end
 
     ScreenGui:Destroy()
 end
 
 function Library:OnUnload(Callback)
-    Library.OnUnload = Callback
+    table.insert(Library.UnloadSignals, Callback)
 end
 
 Library:GiveSignal(ScreenGui.DescendantRemoving:Connect(function(Instance)

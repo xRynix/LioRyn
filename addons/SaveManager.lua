@@ -26,6 +26,7 @@ end
 
 local SaveManager = {} do
 	SaveManager.Folder = 'LinoriaLibSettings'
+	SaveManager.SubFolder = ''
 	SaveManager.Ignore = {}
 	SaveManager.Parser = {
 		Toggle = {
@@ -90,13 +91,23 @@ local SaveManager = {} do
 			end,
 		},
 	}
-
-	function SaveManager:BuildFolderTree()
-		local paths = {
+	
+	function SaveManager:GetPaths()
+	    local paths = {
 			self.Folder,
 			self.Folder .. '/themes',
 			self.Folder .. '/settings'
 		}
+		
+		if self.SubFolder ~= "" then 
+		    table.insert(paths, self.Folder .. "/settings/" .. self.SubFolder);
+		end
+		
+		return paths
+	end
+
+	function SaveManager:BuildFolderTree()
+		local paths = SaveManager:GetPaths()
 
 		for i = 1, #paths do
 			local str = paths[i]
@@ -123,6 +134,11 @@ local SaveManager = {} do
 		self.Folder = folder;
 		self:BuildFolderTree()
 	end
+	
+	function SaveManager:SetSubFolder(folder)
+		self.SubFolder = folder;
+		self:BuildFolderTree()
+	end
 
 	function SaveManager:Save(name)
 		if (not name) then
@@ -131,6 +147,10 @@ local SaveManager = {} do
 		SaveManager:CheckFolderTree()
 		
 		local fullPath = self.Folder .. '/settings/' .. name .. '.json'
+		if self.SubFolder ~= "" then 
+		    fullPath = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
+		end
+		
 		local data = {
 			objects = {}
 		}
@@ -164,6 +184,10 @@ local SaveManager = {} do
 		SaveManager:CheckFolderTree()
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
+		if self.SubFolder ~= "" then 
+		    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
+		end
+		
 		if not isfile(file) then return false, 'invalid file' end
 
 		local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file))
@@ -184,6 +208,10 @@ local SaveManager = {} do
 		end
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
+		if self.SubFolder ~= "" then 
+		    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
+		end
+		
 		if not isfile(file) then return false, 'invalid file' end
 
 		local success, decoded = pcall(delfile, file)
@@ -203,7 +231,13 @@ local SaveManager = {} do
 	function SaveManager:RefreshConfigList()
 		local success, data = pcall(function()
 			SaveManager:CheckFolderTree()
-			local list = listfiles(self.Folder .. '/settings')
+			
+			local list = {}
+	        if self.SubFolder == "" then 
+	            list = listfiles(self.Folder .. '/settings')
+	        else
+		        list = listfiles(self.Folder .. "/settings/" .. self.SubFolder)
+	        end
 	
 			local out = {}
 			for i = 1, #list do
@@ -243,8 +277,13 @@ local SaveManager = {} do
 	function SaveManager:LoadAutoloadConfig()
 		SaveManager:CheckFolderTree()
 		
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local name = readfile(self.Folder .. '/settings/autoload.txt')
+		local autoLoadPath = self.Folder .. '/settings/autoload.txt'
+		if self.SubFolder ~= "" then 
+		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
+		end
+		
+		if isfile(autoLoadPath) then
+			local name = readfile(autoLoadPath)
 
 			local success, err = self:Load(name)
 			if not success then
@@ -323,12 +362,23 @@ local SaveManager = {} do
 
 		section:AddButton('Set as autoload', function()
 			local name = getgenv().Linoria.Options.SaveManager_ConfigList.Value
-			writefile(self.Folder .. '/settings/autoload.txt', name)
+			
+			local autoLoadPath = self.Folder .. '/settings/autoload.txt'
+    		if self.SubFolder ~= "" then 
+    		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
+    		end
+			writefile(autoLoadPath, name)
+			
 			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. name)
 			self.Library:Notify(string.format('Set %q to auto load', name))
 		end)
 		section:AddButton('Reset autoload', function()
-			local success = pcall(delfile, self.Folder .. '/settings/autoload.txt')
+		    local autoLoadPath = self.Folder .. '/settings/autoload.txt'
+    		if self.SubFolder ~= "" then 
+    		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
+    		end
+    		
+			local success = pcall(delfile, autoLoadPath)
 			if not success then 
 				return self.Library:Notify('Failed to reset autoload: delete file error')
 			end
@@ -338,10 +388,17 @@ local SaveManager = {} do
 		end)
 
 		SaveManager.AutoloadLabel = section:AddLabel('Current autoload config: none', true)
-
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local name = readfile(self.Folder .. '/settings/autoload.txt')
-			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. name)
+        
+        do
+            local autoLoadPath = self.Folder .. '/settings/autoload.txt'
+    		if self.SubFolder ~= "" then 
+    		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
+    		end
+    		
+    		if isfile(autoLoadPath) then
+    			local name = readfile(autoLoadPath)
+    			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. name)
+    		end
 		end
 
 		SaveManager:SetIgnoreIndexes({ 'SaveManager_ConfigList', 'SaveManager_ConfigName' })

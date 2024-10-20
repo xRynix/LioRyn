@@ -494,6 +494,10 @@ SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
 -- and game configs in a separate folder per game
 ThemeManager:SetFolder('MyScriptHub')
 SaveManager:SetFolder('MyScriptHub/specific-game')
+SaveManager:SetSubFolder('specific-place') -- if the game has multiple places inside of it (for example: DOORS) 
+					   -- you can use this to save configs for those places separately
+					   -- The path in this script would be: MyScriptHub/specific-game/settings/specific-place
+					   -- [ This is optional ]
 
 -- Builds our config menu on the right side of our tab
 SaveManager:BuildConfigSection(Tabs['UI Settings'])

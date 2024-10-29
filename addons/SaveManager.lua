@@ -245,10 +245,10 @@ local SaveManager = {} do
 			SaveManager:CheckFolderTree()
 			
 			local list = {}
-	        if self.SubFolder == "" then 
-	            list = listfiles(self.Folder .. '/settings')
+	        if SaveManager:CheckSubFolder(true) then 
+				list = listfiles(self.Folder .. "/settings/" .. self.SubFolder)
 	        else
-		        list = listfiles(self.Folder .. "/settings/" .. self.SubFolder)
+		        list = listfiles(self.Folder .. '/settings')
 	        end
 	
 			local out = {}

@@ -91,6 +91,18 @@ local SaveManager = {} do
 			end,
 		},
 	}
+
+	function SaveManager:CheckSubFolder(createFolder)
+		if typeof(self.SubFolder) ~= "string" or self.SubFolder == "" then return false end
+
+		if createFolder == true then
+			if not isfolder(self.Folder .. "/settings/" .. self.SubFolder) then
+				makefolder(self.Folder .. "/settings/" .. self.SubFolder)
+			end
+		end
+
+		return true
+	end
 	
 	function SaveManager:GetPaths()
 	    local paths = {
@@ -99,7 +111,7 @@ local SaveManager = {} do
 			self.Folder .. '/settings'
 		}
 		
-		if self.SubFolder ~= "" then 
+		if SaveManager:CheckSubFolder(false) then 
 		    table.insert(paths, self.Folder .. "/settings/" .. self.SubFolder);
 		end
 		
@@ -147,7 +159,7 @@ local SaveManager = {} do
 		SaveManager:CheckFolderTree()
 		
 		local fullPath = self.Folder .. '/settings/' .. name .. '.json'
-		if self.SubFolder ~= "" then 
+		if SaveManager:CheckSubFolder(true) then 
 		    fullPath = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
 		end
 		
@@ -184,7 +196,7 @@ local SaveManager = {} do
 		SaveManager:CheckFolderTree()
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
-		if self.SubFolder ~= "" then 
+		if SaveManager:CheckSubFolder(true) then 
 		    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
 		end
 		
@@ -208,7 +220,7 @@ local SaveManager = {} do
 		end
 		
 		local file = self.Folder .. '/settings/' .. name .. '.json'
-		if self.SubFolder ~= "" then 
+		if SaveManager:CheckSubFolder(true) then 
 		    file = self.Folder .. "/settings/" .. self.SubFolder .. "/" .. name .. '.json'
 		end
 		
@@ -278,7 +290,7 @@ local SaveManager = {} do
 		SaveManager:CheckFolderTree()
 		
 		local autoLoadPath = self.Folder .. '/settings/autoload.txt'
-		if self.SubFolder ~= "" then 
+		if SaveManager:CheckSubFolder(true) then 
 		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
 		end
 		
@@ -364,7 +376,7 @@ local SaveManager = {} do
 			local name = getgenv().Linoria.Options.SaveManager_ConfigList.Value
 			
 			local autoLoadPath = self.Folder .. '/settings/autoload.txt'
-    		if self.SubFolder ~= "" then 
+    		if SaveManager:CheckSubFolder(true) then 
     		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
     		end
 			writefile(autoLoadPath, name)
@@ -374,7 +386,7 @@ local SaveManager = {} do
 		end)
 		section:AddButton('Reset autoload', function()
 		    local autoLoadPath = self.Folder .. '/settings/autoload.txt'
-    		if self.SubFolder ~= "" then 
+    		if SaveManager:CheckSubFolder(true) then 
     		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
     		end
     		
@@ -391,7 +403,7 @@ local SaveManager = {} do
         
         do
             local autoLoadPath = self.Folder .. '/settings/autoload.txt'
-    		if self.SubFolder ~= "" then 
+    		if SaveManager:CheckSubFolder(true) then 
     		    autoLoadPath = self.Folder .. "/settings/" .. self.SubFolder .. "/autoload.txt"
     		end
     		

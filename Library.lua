@@ -1,4 +1,4 @@
-local cloneref = cloneref or function(o) return o end
+local cloneref = (cloneref or clonereference or function(instance: any) return instance end)
 local InputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
 local CoreGui: CoreGui = cloneref(game:GetService('CoreGui'));
@@ -20,6 +20,13 @@ pcall(ProtectGui, ScreenGui);
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);
 if not Parented then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui", 9e9) end;
+
+--[[
+    You can access Toggles & Options through (I'm planning to remove **a** option):
+        a) getgenv().Toggles, getgenv().Options (IY will break this getgenv)
+        b) getgenv().Linoria.Toggles, getgenv().Linoria.Options
+        c) Library.Toggles, Library.Options
+--]]
 
 local Toggles = {};
 local Options = {};
@@ -72,6 +79,10 @@ local Library = {
 
     VideoLink = "";
     TotalTabs = 0;
+
+    -- for better usage --
+    Toggles = Toggles;
+    Options = Options;
 };
 
 pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.

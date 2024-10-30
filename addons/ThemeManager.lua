@@ -1,7 +1,8 @@
-local cloneref = cloneref or function(o) return o end
+local cloneref = (cloneref or clonereference or function(instance: any) return instance end)
 local httpService = cloneref(game:GetService('HttpService'))
 local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 local getassetfunc = getcustomasset or getsynasset
+
 local ThemeManager = {} do
 	ThemeManager.Folder = 'LinoriaLibSettings'
 	-- if not isfolder(ThemeManager.Folder) then makefolder(ThemeManager.Folder) end
@@ -19,7 +20,7 @@ local ThemeManager = {} do
 	}
 
 	function ApplyBackgroundVideo(webmLink)
-		if writefile == nil then return end;if readfile == nil then return end;if isfile == nil then return end
+		if writefile == nil or readfile == nil or isfile == nil then return end
 		if ThemeManager.Library == nil then return end
 		if ThemeManager.Library.InnerVideoBackground == nil then return end
 
@@ -28,6 +29,7 @@ local ThemeManager = {} do
 			if isfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt') then
 				CurrentSaved = readfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt')
 			end
+			
 			local VideoData = nil;
 			if CurrentSaved == tostring(webmLink) then
 				VideoData = {
@@ -55,7 +57,48 @@ local ThemeManager = {} do
 			end
 		end
 	end
+
+	function ThemeManager:SetLibrary(library)
+		self.Library = library
+	end
+
+	--// Foldes \\--
+	function ThemeManager:GetPaths()
+	    local paths = {}
+
+		local parts = self.Folder:split('/')
+		for idx = 1, #parts do
+			paths[#paths + 1] = table.concat(parts, '/', 1, idx)
+		end
+
+		paths[#paths + 1] = self.Folder .. '/themes'
+		
+		return paths
+	end
+
+	function ThemeManager:BuildFolderTree()
+		local paths = self:GetPaths()
+
+		for i = 1, #paths do
+			local str = paths[i]
+			if isfolder(str) then continue end
+			makefolder(str)
+		end
+	end
+
+	function ThemeManager:CheckFolderTree()
+		if isfolder(self.Folder) then return end
+		self:BuildFolderTree()
+
+		task.wait(0.1)
+	end
+
+	function ThemeManager:SetFolder(folder)
+		self.Folder = folder;
+		self:BuildFolderTree()
+	end
 	
+	--// Apply, Update theme \\--
 	function ThemeManager:ApplyTheme(theme)
 		local customThemeData = self:GetCustomTheme(theme)
 		local data = customThemeData or self.BuiltInThemes[theme]
@@ -72,14 +115,14 @@ local ThemeManager = {} do
 			if idx ~= "VideoLink" then
 				self.Library[idx] = Color3.fromHex(col)
 				
-				if getgenv().Linoria.Options[idx] then
-					getgenv().Linoria.Options[idx]:SetValueRGB(Color3.fromHex(col))
+				if self.Library.Options[idx] then
+					self.Library.Options[idx]:SetValueRGB(Color3.fromHex(col))
 				end
 			else
 				self.Library[idx] = col
 				
-				if getgenv().Linoria.Options[idx] then
-					getgenv().Linoria.Options[idx]:SetValue(col)
+				if self.Library.Options[idx] then
+					self.Library.Options[idx]:SetValue(col)
 				end
 				
 				ApplyBackgroundVideo(col)
@@ -97,10 +140,10 @@ local ThemeManager = {} do
 		
 		local options = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink" }
 		for i, field in next, options do
-			if getgenv().Linoria.Options and getgenv().Linoria.Options[field] then
-				self.Library[field] = getgenv().Linoria.Options[field].Value
+			if self.Library.Options and self.Library.Options[field] then
+				self.Library[field] = self.Library.Options[field].Value
 				if field == "VideoLink" then
-					ApplyBackgroundVideo(getgenv().Linoria.Options[field].Value)
+					ApplyBackgroundVideo(self.Library.Options[field].Value)
 				end
 			end
 		end
@@ -109,7 +152,24 @@ local ThemeManager = {} do
 		self.Library:UpdateColorsUsingRegistry()
 	end
 
-	function ThemeManager:LoadDefault()		
+	--// Get, Load, Save, Delete, Refresh \\--
+	function ThemeManager:GetCustomTheme(file)
+		local path = self.Folder .. '/themes/' .. file .. '.json'
+		if not isfile(path) then
+			return nil
+		end
+
+		local data = readfile(path)
+		local success, decoded = pcall(httpService.JSONDecode, httpService, data)
+		
+		if not success then
+			return nil
+		end
+
+		return decoded
+	end
+
+	function ThemeManager:LoadDefault()
 		local theme = 'Default'
 		local content = isfile(self.Folder .. '/themes/default.txt') and readfile(self.Folder .. '/themes/default.txt')
 
@@ -122,11 +182,11 @@ local ThemeManager = {} do
 				isDefault = false;
 			end
 		elseif self.BuiltInThemes[self.DefaultTheme] then
-		theme = self.DefaultTheme
+			theme = self.DefaultTheme
 		end
 
 		if isDefault then
-			getgenv().Linoria.Options.ThemeManager_ThemeList:SetValue(theme)
+			self.Library.Options.ThemeManager_ThemeList:SetValue(theme)
 		else
 			self:ApplyTheme(theme)
 		end
@@ -136,16 +196,32 @@ local ThemeManager = {} do
 		writefile(self.Folder .. '/themes/default.txt', theme)
 	end
 
+	function ThemeManager:SaveCustomTheme(file)
+		if file:gsub(' ', '') == '' then
+			return self.Library:Notify('Invalid file name for theme (empty)', 3)
+		end
+
+		local theme = {}
+		local fields = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink" }
+
+		for _, field in next, fields do
+			if field == "VideoLink" then
+				theme[field] = self.Library.Options[field].Value
+			else
+				theme[field] = self.Library.Options[field].Value:ToHex()
+			end
+		end
+
+		writefile(self.Folder .. '/themes/' .. file .. '.json', httpService:JSONEncode(theme))
+	end
+
 	function ThemeManager:Delete(name)
 		if (not name) then
 			return false, 'no config file is selected'
 		end
 
 		local file = self.Folder .. '/themes/' .. name .. '.json'
-		if not isfile(file) then
-			file = self.Folder .. '/themes/' .. name
-			if not isfile(file) then return false, 'invalid file' end
-		end
+		if not isfile(file) then return false, 'invalid file' end
 
 		local success, decoded = pcall(delfile, file)
 		if not success then return false, 'delete file error' end
@@ -153,6 +229,34 @@ local ThemeManager = {} do
 		return true
 	end
 	
+	function ThemeManager:ReloadCustomThemes()
+		local list = listfiles(self.Folder .. '/themes')
+
+		local out = {}
+		for i = 1, #list do
+			local file = list[i]
+			if file:sub(-5) == '.json' then
+				-- i hate this but it has to be done ...
+
+				local pos = file:find('.json', 1, true)
+				local start = pos
+
+				local char = file:sub(pos, pos)
+				while char ~= '/' and char ~= '\\' and char ~= '' do
+					pos = pos - 1
+					char = file:sub(pos, pos)
+				end
+
+				if char == '/' or char == '\\' then
+					table.insert(out, file:sub(pos + 1, start - 1))
+				end
+			end
+		end
+
+		return out
+	end
+
+	--// GUI \\--
 	function ThemeManager:CreateThemeManager(groupbox)
 		groupbox:AddLabel('Background color'):AddColorPicker('BackgroundColor', { Default = self.Library.BackgroundColor });
 		groupbox:AddLabel('Main color')	:AddColorPicker('MainColor', { Default = self.Library.MainColor });
@@ -172,35 +276,41 @@ local ThemeManager = {} do
 
 		groupbox:AddDropdown('ThemeManager_ThemeList', { Text = 'Theme list', Values = ThemesArray, Default = 1 })
 		groupbox:AddButton('Set as default', function()
-			self:SaveDefault(getgenv().Linoria.Options.ThemeManager_ThemeList.Value)
-			self.Library:Notify(string.format('Set default theme to %q', getgenv().Linoria.Options.ThemeManager_ThemeList.Value))
+			self:SaveDefault(self.Library.Options.ThemeManager_ThemeList.Value)
+			self.Library:Notify(string.format('Set default theme to %q', self.Library.Options.ThemeManager_ThemeList.Value))
 		end)
 
-		getgenv().Linoria.Options.ThemeManager_ThemeList:OnChanged(function()
-			self:ApplyTheme(getgenv().Linoria.Options.ThemeManager_ThemeList.Value)
+		self.Library.Options.ThemeManager_ThemeList:OnChanged(function()
+			self:ApplyTheme(self.Library.Options.ThemeManager_ThemeList.Value)
 		end)
 
 		groupbox:AddDivider()
 
 		groupbox:AddInput('ThemeManager_CustomThemeName', { Text = 'Custom theme name' })
 		groupbox:AddButton('Create theme', function() 
-			self:SaveCustomTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeName.Value)
+			self:SaveCustomTheme(self.Library.Options.ThemeManager_CustomThemeName.Value)
 
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValue(nil)
+			self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
+			self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
 		end)
 
 		groupbox:AddDivider()
 
 		groupbox:AddDropdown('ThemeManager_CustomThemeList', { Text = 'Custom themes', Values = self:ReloadCustomThemes(), AllowNull = true, Default = 1 })
-		groupbox:AddButton('Load theme', function() 
-			self:ApplyTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value) 
+		groupbox:AddButton('Load theme', function()
+			local name = self.Library.Options.ThemeManager_CustomThemeList.Value
+
+			self:ApplyTheme(name)
+			self.Library:Notify(string.format('Loaded theme %q', name))
 		end)
 		groupbox:AddButton('Overwrite theme', function()
-			self:SaveCustomTheme(getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value)
+			local name = self.Library.Options.ThemeManager_CustomThemeList.Value
+
+			self:SaveCustomTheme(name)
+			self.Library:Notify(string.format('Overwrote config %q', name))
 		end)
 		groupbox:AddButton('Delete theme', function()
-			local name = getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value
+			local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
 			local success, err = self:Delete(name)
 			if not success then
@@ -208,17 +318,17 @@ local ThemeManager = {} do
 			end
 
 			self.Library:Notify(string.format('Deleted theme %q', name))
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValue(nil)
+			self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
+			self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
 		end)
 		groupbox:AddButton('Refresh list', function()
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValue(nil)
+			self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
+			self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
 		end)
 		groupbox:AddButton('Set as default', function()
-			if getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value ~= nil and getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value ~= '' then
-				self:SaveDefault(getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value)
-				self.Library:Notify(string.format('Set default theme to %q', getgenv().Linoria.Options.ThemeManager_CustomThemeList.Value))
+			if self.Library.Options.ThemeManager_CustomThemeList.Value ~= nil and self.Library.Options.ThemeManager_CustomThemeList.Value ~= '' then
+				self:SaveDefault(self.Library.Options.ThemeManager_CustomThemeList.Value)
+				self.Library:Notify(string.format('Set default theme to %q', self.Library.Options.ThemeManager_CustomThemeList.Value))
 			end
 		end)
 		groupbox:AddButton('Reset default', function()
@@ -228,112 +338,18 @@ local ThemeManager = {} do
 			end
 				
 			self.Library:Notify('Set default theme to nothing')
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
-			getgenv().Linoria.Options.ThemeManager_CustomThemeList:SetValue(nil)
+			self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
+			self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
 		end)
 
-		ThemeManager:LoadDefault()
+		self:LoadDefault()
 
-		local function UpdateTheme()
-			self:ThemeUpdate()
-		end
-
-		getgenv().Linoria.Options.BackgroundColor:OnChanged(UpdateTheme)
-		getgenv().Linoria.Options.MainColor:OnChanged(UpdateTheme)
-		getgenv().Linoria.Options.AccentColor:OnChanged(UpdateTheme)
-		getgenv().Linoria.Options.OutlineColor:OnChanged(UpdateTheme)
-		getgenv().Linoria.Options.FontColor:OnChanged(UpdateTheme)
-	end
-
-	function ThemeManager:GetCustomTheme(file)
-		local path = self.Folder .. '/themes/' .. file
-		if not isfile(path) then
-			return nil
-		end
-
-		local data = readfile(path)
-		local success, decoded = pcall(httpService.JSONDecode, httpService, data)
-		
-		if not success then
-			return nil
-		end
-
-		return decoded
-	end
-
-	function ThemeManager:SaveCustomTheme(file)
-		if file:gsub(' ', '') == '' then
-			return self.Library:Notify('Invalid file name for theme (empty)', 3)
-		end
-
-		local theme = {}
-		local fields = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink" }
-
-		for _, field in next, fields do
-			if field == "VideoLink" then
-				theme[field] = getgenv().Linoria.Options[field].Value
-			else
-				theme[field] = getgenv().Linoria.Options[field].Value:ToHex()
-			end
-		end
-
-		writefile(self.Folder .. '/themes/' .. file .. '.json', httpService:JSONEncode(theme))
-	end
-
-	function ThemeManager:ReloadCustomThemes()
-		local list = listfiles(self.Folder .. '/themes')
-
-		local out = {}
-		for i = 1, #list do
-			local file = list[i]
-			if file:sub(-5) == '.json' then
-				-- i hate this but it has to be done ...
-
-				local pos = file:find('.json', 1, true)
-				local char = file:sub(pos, pos)
-
-				while char ~= '/' and char ~= '\\' and char ~= '' do
-					pos = pos - 1
-					char = file:sub(pos, pos)
-				end
-
-				if char == '/' or char == '\\' then
-					table.insert(out, file:sub(pos + 1))
-				end
-			end
-		end
-
-		return out
-	end
-
-	function ThemeManager:SetLibrary(lib)
-		self.Library = lib
-	end
-
-	function ThemeManager:BuildFolderTree()
-		local paths = {}
-
-		-- build the entire tree if a path is like some-hub/phantom-forces
-		-- makefolder builds the entire tree on Synapse X but not other exploits
-
-		local parts = self.Folder:split('/')
-		for idx = 1, #parts do
-			paths[#paths + 1] = table.concat(parts, '/', 1, idx)
-		end
-
-		table.insert(paths, self.Folder .. '/themes')
-
-		for i = 1, #paths do
-			local str = paths[i]
-			if not isfolder(str) then
-				makefolder(str)
-			end
-		end
-	end
-
-	function ThemeManager:SetFolder(folder)
-		self.Folder = folder
-		self:BuildFolderTree()
+		local function UpdateTheme() self:ThemeUpdate() end
+		self.Library.Options.BackgroundColor:OnChanged(UpdateTheme)
+		self.Library.Options.MainColor:OnChanged(UpdateTheme)
+		self.Library.Options.AccentColor:OnChanged(UpdateTheme)
+		self.Library.Options.OutlineColor:OnChanged(UpdateTheme)
+		self.Library.Options.FontColor:OnChanged(UpdateTheme)
 	end
 
 	function ThemeManager:CreateGroupBox(tab)

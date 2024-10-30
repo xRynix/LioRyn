@@ -127,14 +127,25 @@ local SaveManager = {} do
 	end
 	
 	function SaveManager:GetPaths()
-	    local paths = {
-			[1] = self.Folder,
-			[2] = self.Folder .. '/themes',
-			[3] = self.Folder .. '/settings'
-		}
+	    local paths = {}
+
+		local parts = self.Folder:split('/')
+		for idx = 1, #parts do
+			local path = table.concat(parts, '/', 1, idx)
+			if not table.find(paths, path) then paths[#paths + 1] = path end
+		end
+
+		paths[#paths + 1] = self.Folder .. '/themes'
+		paths[#paths + 1] = self.Folder .. '/settings'
 		
 		if self:CheckSubFolder(false) then 
-		    paths[#paths + 1] = self.Folder .. "/settings/" .. self.SubFolder;
+		    local subFolder = self.Folder .. "/settings/" .. self.SubFolder
+			parts = subFolder:split('/')
+
+			for idx = 1, #parts do
+				local path = table.concat(parts, '/', 1, idx)
+				if not table.find(paths, path) then paths[#paths + 1] = path end
+			end
 		end
 		
 		return paths

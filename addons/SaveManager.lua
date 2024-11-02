@@ -97,7 +97,7 @@ local SaveManager = {} do
             end,
             Load = function(idx, data)
                 local object = SaveManager.Library.Options[idx]
-                if object and object.value ~= data.text and type(data.text) == 'string' then
+                if object and object.Value ~= data.text and type(data.text) == 'string' then
                     SaveManager.Library.Options[idx]:SetValue(data.text)
                 end
             end,

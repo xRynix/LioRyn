@@ -43,8 +43,9 @@ local SaveManager = {} do
 				return { type = 'Toggle', idx = idx, value = object.Value } 
 			end,
 			Load = function(idx, data)
-				if SaveManager.Library.Toggles[idx] then 
-					SaveManager.Library.Toggles[idx]:SetValue(data.value)
+                local object = SaveManager.Library.Toggles[idx]
+				if object and object.Value ~= data.value then 
+					object:SetValue(data.value)
 				end
 			end,
 		},
@@ -53,8 +54,9 @@ local SaveManager = {} do
 				return { type = 'Slider', idx = idx, value = tostring(object.Value) }
 			end,
 			Load = function(idx, data)
-				if SaveManager.Library.Options[idx] then 
-					SaveManager.Library.Options[idx]:SetValue(data.value)
+                local object = SaveManager.Library.Options[idx]
+				if object and object.Value ~= data.value then 
+					object:SetValue(data.value)
 				end
 			end,
 		},
@@ -63,8 +65,9 @@ local SaveManager = {} do
 				return { type = 'Dropdown', idx = idx, value = object.Value, mutli = object.Multi }
 			end,
 			Load = function(idx, data)
-				if SaveManager.Library.Options[idx] then 
-					SaveManager.Library.Options[idx]:SetValue(data.value)
+                local object = SaveManager.Library.Options[idx]
+				if object and object.Value ~= data.value then 
+					object:SetValue(data.value)
 				end
 			end,
 		},
@@ -88,13 +91,13 @@ local SaveManager = {} do
 				end
 			end,
 		},
-
 		Input = {
 			Save = function(idx, object)
 				return { type = 'Input', idx = idx, text = object.Value }
 			end,
 			Load = function(idx, data)
-				if SaveManager.Library.Options[idx] and type(data.text) == 'string' then
+                local object = SaveManager.Library.Options[idx]
+				if object and object.value ~= data.text and type(data.text) == 'string' then
 					SaveManager.Library.Options[idx]:SetValue(data.text)
 				end
 			end,

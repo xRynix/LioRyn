@@ -1827,14 +1827,17 @@ do
         
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
+        local Blank = nil;
         local Groupbox = self;
         local Container = Groupbox.Container;
+        local IsVisible = typeof(Button.Visible) ~= "boolean" and true or Button.Visible
 
         local function CreateBaseButton(Button)
             local Outer = Library:Create('Frame', {
                 BackgroundColor3 = Color3.new(0, 0, 0);
                 BorderColor3 = Color3.new(0, 0, 0);
                 Size = UDim2.new(1, -4, 0, 20);
+                Visible = IsVisible;
                 ZIndex = 5;
             });
 
@@ -1957,7 +1960,6 @@ do
             return self
         end
 
-
         function Button:AddButton(...)
             local SubButton = typeof(select(1, ...)) == "table" and select(1, ...) or {
                 Text = select(1, ...),
@@ -1993,7 +1995,16 @@ do
             Button:AddTooltip(Button.Tooltip)
         end
 
-        Groupbox:AddBlank(5);
+        function Button:SetVisible(Visibility)
+            IsVisible = Visibility;
+
+            Button.Outer.Visible = IsVisible;
+            if Blank then Blank.Visible = IsVisible end;
+
+            Groupbox:Resize();
+        end;
+
+        Blank = Groupbox:AddBlank(5, IsVisible);
         Groupbox:Resize();
 
         return Button;

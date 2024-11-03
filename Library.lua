@@ -1830,7 +1830,7 @@ do
         local Blank = nil;
         local Groupbox = self;
         local Container = Groupbox.Container;
-        local IsVisible = typeof(Button.Visible) ~= "boolean" and true or Button.Visible
+        local IsVisible = typeof(Button.Visible) ~= "boolean" and true or Button.Visible;
 
         local function CreateBaseButton(Button)
             local Outer = Library:Create('Frame', {

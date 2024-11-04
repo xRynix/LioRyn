@@ -219,7 +219,7 @@ function Library:MakeDraggable(Instance, Cutoff, IsMainWindow)
     if Library.IsMobile == false then
         Instance.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-            	if IsMainWindow == true and Library.CantDragForced == true then
+                if IsMainWindow == true and Library.CantDragForced == true then
                     return;
                 end;
            
@@ -296,9 +296,9 @@ function Library:MakeDraggableUsingParent(Instance, Parent, Cutoff, IsMainWindow
     Instance.Active = true;
 
     if Library.IsMobile == false then
-    	Instance.InputBegan:Connect(function(Input)
+        Instance.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-            	if IsMainWindow == true and Library.CantDragForced == true then
+                if IsMainWindow == true and Library.CantDragForced == true then
                     return;
                 end;
   
@@ -1530,19 +1530,19 @@ do
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == 'Toggle';
 
             if ShowToggle then
-            	if KeybindsToggle.Loaded then
-            		KeybindsToggle:SetNormal(false);
+                if KeybindsToggle.Loaded then
+                    KeybindsToggle:SetNormal(false);
                     KeybindsToggle:SetVisibility(true);       
                     KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
                     KeybindsToggle:Display(State);
                 end
             else
                 if KeybindsToggle.Loaded then
-            		KeybindsToggle:SetNormal(true);
+                    KeybindsToggle:SetNormal(true);
                 end
             end;  
             if KeybindsToggle.Loaded then
-            	if ShowToggle then KeybindsToggle:SetNormal(false); else KeybindsToggle:SetNormal(true); end;
+                if ShowToggle then KeybindsToggle:SetNormal(false); else KeybindsToggle:SetNormal(true); end;
        
                 KeybindsToggle:SetVisibility(true);       
                 KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
@@ -2681,9 +2681,12 @@ do
             Multi = Info.Multi;
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
+            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
             Callback = Info.Callback or function(Value) end;
         };
 
+        local Blank;
+        local CompactBlank;
         local Groupbox = self;
         local Container = Groupbox.Container;
 
@@ -2696,11 +2699,12 @@ do
                 Text = Info.Text;
                 TextXAlignment = Enum.TextXAlignment.Left;
                 TextYAlignment = Enum.TextYAlignment.Bottom;
+                Visible = Dropdown.Visible;
                 ZIndex = 5;
                 Parent = Container;
             });
 
-            Groupbox:AddBlank(3);
+            CompactBlank = Groupbox:AddBlank(3, Dropdown.Visible);
         end
 
         for _, Element in next, Container:GetChildren() do
@@ -2713,6 +2717,7 @@ do
             BackgroundColor3 = Color3.new(0, 0, 0);
             BorderColor3 = Color3.new(0, 0, 0);
             Size = UDim2.new(1, -4, 0, 20);
+            Visible = Dropdown.Visible;
             ZIndex = 5;
             Parent = Container;
         });
@@ -3003,6 +3008,17 @@ do
             Dropdown:BuildDropdownList();
         end;
 
+        function Dropdown:SetVisible(Visibility)
+            Dropdown.Visible = Visibility;
+
+            DropdownOuter.Visible = Dropdown.Visible;
+            if Blank then Blank.Visible = Dropdown.Visible end;
+            if CompactBlank then CompactBlank.Visible = Dropdown.Visible end;
+            if not Dropdown.Visible then Dropdown:CloseDropdown() end;
+
+            Groupbox:Resize();
+        end;
+
         function Dropdown:OpenDropdown()
             if Library.IsMobile then
                 Library.CanDrag = false;
@@ -3114,7 +3130,7 @@ do
             Dropdown:Display();
         end
 
-        Groupbox:AddBlank(Info.BlankSize or 5);
+        Blank = Groupbox:AddBlank(Info.BlankSize or 5, Dropdown.Visible);
         Groupbox:Resize();
 
         Options[Idx] = Dropdown;
@@ -3995,9 +4011,9 @@ function Library:CreateWindow(...)
 
                 for _, Element in next, TopBarInner:GetChildren() do
                     if (not Element:IsA('UIListLayout')) and Element.Visible then
-                    	if Element == TopBarTextLabel then
-                    		Size = Size + Element.TextBounds.Y;    
-                    		continue                     
+                        if Element == TopBarTextLabel then
+                            Size = Size + Element.TextBounds.Y;    
+                            continue                     
                         end;
                         
                         Size = Size + Element.Size.Y.Offset;
@@ -4457,7 +4473,7 @@ function Library:CreateWindow(...)
                 if Option.Type == 'Dropdown' then
                     Option:CloseDropdown();
                 elseif Option.Type == 'KeyPicker' then
-                	Option:SetModePickerVisibility(false);
+                    Option:SetModePickerVisibility(false);
                 elseif Option.Type == 'ColorPicker' then
                     Option.ContextMenu:Hide();
                     Option:Hide();

@@ -1,4 +1,4 @@
-local cloneref = cloneref or function(o) return o end
+local cloneref = (cloneref or clonereference or function(instance: any) return instance end)
 local InputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
 local CoreGui: CoreGui = cloneref(game:GetService('CoreGui'));
@@ -20,6 +20,13 @@ pcall(ProtectGui, ScreenGui);
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);
 if not Parented then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui", 9e9) end;
+
+--[[
+    You can access Toggles & Options through (I'm planning to remove **a** option):
+        a) getgenv().Toggles, getgenv().Options (IY will break this getgenv)
+        b) getgenv().Linoria.Toggles, getgenv().Linoria.Options
+        c) Library.Toggles, Library.Options
+--]]
 
 local Toggles = {};
 local Options = {};
@@ -72,6 +79,10 @@ local Library = {
 
     VideoLink = "";
     TotalTabs = 0;
+
+    -- for better usage --
+    Toggles = Toggles;
+    Options = Options;
 };
 
 pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
@@ -1577,7 +1588,7 @@ do
                     return Key == 'MB1' and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
                         or Key == 'MB2' and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2);
                 else
-                    return InputService:IsKeyDown(Enum.KeyCode[KeyPicker.Value]);
+                    return InputService:IsKeyDown(Enum.KeyCode[KeyPicker.Value]) and not InputService:GetFocusedTextBox();
                 end;
             else
                 return KeyPicker.Toggled;
@@ -1768,6 +1779,7 @@ do
             TextXAlignment = Enum.TextXAlignment.Left;
             ZIndex = 5;
             Parent = Container;
+            RichText = true;
         });
 
         if DoesWrap then
@@ -1815,14 +1827,17 @@ do
         
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
+        local Blank = nil;
         local Groupbox = self;
         local Container = Groupbox.Container;
+        local IsVisible = typeof(Button.Visible) ~= "boolean" and true or Button.Visible;
 
         local function CreateBaseButton(Button)
             local Outer = Library:Create('Frame', {
                 BackgroundColor3 = Color3.new(0, 0, 0);
                 BorderColor3 = Color3.new(0, 0, 0);
                 Size = UDim2.new(1, -4, 0, 20);
+                Visible = IsVisible;
                 ZIndex = 5;
             });
 
@@ -1945,7 +1960,6 @@ do
             return self
         end
 
-
         function Button:AddButton(...)
             local SubButton = typeof(select(1, ...)) == "table" and select(1, ...) or {
                 Text = select(1, ...),
@@ -1981,7 +1995,16 @@ do
             Button:AddTooltip(Button.Tooltip)
         end
 
-        Groupbox:AddBlank(5);
+        function Button:SetVisible(Visibility)
+            IsVisible = Visibility;
+
+            Button.Outer.Visible = IsVisible;
+            if Blank then Blank.Visible = IsVisible end;
+
+            Groupbox:Resize();
+        end;
+
+        Blank = Groupbox:AddBlank(5, IsVisible);
         Groupbox:Resize();
 
         return Button;

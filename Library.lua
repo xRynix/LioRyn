@@ -2685,6 +2685,7 @@ do
             Callback = Info.Callback or function(Value) end;
         };
 
+        local DropdownLabel;
         local Blank;
         local CompactBlank;
         local Groupbox = self;
@@ -2693,7 +2694,7 @@ do
         local RelativeOffset = 0;
 
         if not Info.Compact then
-            local DropdownLabel = Library:CreateLabel({
+            DropdownLabel = Library:CreateLabel({
                 Size = UDim2.new(1, 0, 0, 10);
                 TextSize = 14;
                 Text = Info.Text;
@@ -3012,6 +3013,7 @@ do
             Dropdown.Visible = Visibility;
 
             DropdownOuter.Visible = Dropdown.Visible;
+            if DropdownLabel then DropdownLabel.Visible = Dropdown.Visible end;
             if Blank then Blank.Visible = Dropdown.Visible end;
             if CompactBlank then CompactBlank.Visible = Dropdown.Visible end;
             if not Dropdown.Visible then Dropdown:CloseDropdown() end;

@@ -465,7 +465,7 @@ local SaveManager = {} do
 
         self.AutoloadLabel = section:AddLabel('Current autoload config: none', true)
 
-        self:LoadAutoloadConfig()
+        -- self:LoadAutoloadConfig()
         self:SetIgnoreIndexes({ 'SaveManager_ConfigList', 'SaveManager_ConfigName' })
     end
 

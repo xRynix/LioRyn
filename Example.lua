@@ -179,7 +179,7 @@ LeftGroupBox:AddLabel('SecondTestLabel', {
 -- You index Options with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
 -- To set the text of the label you do label:SetText
 
-Options.TestLabel:SetText("changed!")
+-- Options.TestLabel:SetText("changed!")
 
 
 -- Groupbox:AddDivider

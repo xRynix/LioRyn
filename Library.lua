@@ -1762,7 +1762,7 @@ do
         });
     end;
 
-    function Funcs:AddLabel(Text, DoesWrap)
+    function Funcs:AddLabel(Text, DoesWrap, Idx)
         local Label = {
 
         };
@@ -1815,6 +1815,10 @@ do
 
         Blank = Groupbox:AddBlank(5);
         Groupbox:Resize();
+
+        if Idx then
+            Options[Idx] = Label;
+        end
 
         return Label;
     end;

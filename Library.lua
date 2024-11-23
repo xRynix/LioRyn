@@ -1764,18 +1764,19 @@ do
 
     function Funcs:AddLabel(...)
         local Data = {}
-        
+
     	if select(2, ...) ~= nil and typeof(select(2, ...)) == "table" then
     		local Params = select(2, ...)
-    		
+
     		Data.Text = Params.Text or ""
     		Data.DoesWrap = Params.DoesWrap or false
     		Data.Idx = select(1, ...)
     	else
     		Data.Text = select(1, ...) or ""
     		Data.DoesWrap = select(2, ...) or false
+            Data.Idx = select(3, ...) or nil
     	end
-                        
+        
         local Label = {
 
         };
@@ -1828,7 +1829,7 @@ do
 
         Blank = Groupbox:AddBlank(5);
         Groupbox:Resize();
-
+        
         if Data.Idx then
             Options[Data.Idx] = Label;
         end

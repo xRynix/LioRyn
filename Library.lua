@@ -1766,6 +1766,10 @@ do
         local Data = {}
 
     	if select(2, ...) ~= nil and typeof(select(2, ...)) == "table" then
+            if select(1, ...) ~= nil then
+                assert(typeof(select(1, ...)) == "string", "Expected string for Idx, got " .. typeof(select(1, ...)))
+            end
+            
     		local Params = select(2, ...)
 
     		Data.Text = Params.Text or ""

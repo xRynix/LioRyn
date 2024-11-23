@@ -1765,7 +1765,7 @@ do
     function Funcs:AddLabel(...)
         local Data = {}
         
-    	if typeof(select(2, ...)) == "table" then
+    	if select(2, ...) and typeof(select(2, ...)) == "table" then
     		local Params = select(2, ...)
     		
     		Data.Text = Params.Text or ""

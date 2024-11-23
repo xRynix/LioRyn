@@ -162,10 +162,25 @@ local MyButton2 = MyButton:AddButton({
 		:AddButton({ Text = 'Kick all', Func = Functions.KickAll, Tooltip = 'This will kick everyone in the game!' })
 ]]
 
+
+
 -- Groupbox:AddLabel
--- Arguments: Text, DoesWrap
+-- Arguments: Text, DoesWrap, Idx
+-- Arguments: Idx, Options
 LeftGroupBox:AddLabel('This is a label')
 LeftGroupBox:AddLabel('This is a label\n\nwhich wraps its text!', true)
+LeftGroupBox:AddLabel('This is a label exposed to Options', true, 'TestLabel')
+LeftGroupBox:AddLabel('SecondTestLabel', {
+	Text = 'This is a label made with table options',
+	DoesWrap = false -- Defaults to false
+})
+
+-- Options is a table added to getgenv() by the library
+-- You index Options with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
+-- To set the text of the label you do label:SetText
+
+-- Options.TestLabel:SetText("changed!")
+
 
 -- Groupbox:AddDivider
 -- Arguments: None

@@ -1762,7 +1762,25 @@ do
         });
     end;
 
-    function Funcs:AddLabel(Text, DoesWrap, Idx)
+    function Funcs:AddLabel(...)
+        local Data = {}
+
+    	if select(2, ...) ~= nil and typeof(select(2, ...)) == "table" then
+            if select(1, ...) ~= nil then
+                assert(typeof(select(1, ...)) == "string", "Expected string for Idx, got " .. typeof(select(1, ...)))
+            end
+            
+    		local Params = select(2, ...)
+
+    		Data.Text = Params.Text or ""
+    		Data.DoesWrap = Params.DoesWrap or false
+    		Data.Idx = select(1, ...)
+    	else
+    		Data.Text = select(1, ...) or ""
+    		Data.DoesWrap = select(2, ...) or false
+            Data.Idx = select(3, ...) or nil
+    	end
+        
         local Label = {
 
         };
@@ -1774,16 +1792,16 @@ do
         local TextLabel = Library:CreateLabel({
             Size = UDim2.new(1, -4, 0, 15);
             TextSize = 14;
-            Text = Text;
-            TextWrapped = DoesWrap or false,
+            Text = Data.Text;
+            TextWrapped = Data.DoesWrap or false,
             TextXAlignment = Enum.TextXAlignment.Left;
             ZIndex = 5;
             Parent = Container;
             RichText = true;
         });
 
-        if DoesWrap then
-            local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+        if Data.DoesWrap then
+            local Y = select(2, Library:GetTextBounds(Data.Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
             TextLabel.Size = UDim2.new(1, -4, 0, Y)
         else
             Library:Create('UIListLayout', {
@@ -1801,7 +1819,7 @@ do
         function Label:SetText(Text)
             TextLabel.Text = Text
 
-            if DoesWrap then
+            if Data.DoesWrap then
                 local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
                 TextLabel.Size = UDim2.new(1, -4, 0, Y)
             end
@@ -1809,15 +1827,15 @@ do
             Groupbox:Resize();
         end
 
-        if (not DoesWrap) then
+        if (not Data.DoesWrap) then
             setmetatable(Label, BaseAddons);
         end
 
         Blank = Groupbox:AddBlank(5);
         Groupbox:Resize();
-
-        if Idx then
-            Options[Idx] = Label;
+        
+        if Data.Idx then
+            Options[Data.Idx] = Label;
         end
 
         return Label;

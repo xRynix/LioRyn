@@ -1780,6 +1780,8 @@ do
     		Data.DoesWrap = select(2, ...) or false
             Data.Idx = select(3, ...) or nil
     	end
+
+        Data.OriginalText = Data.Text;
         
         local Label = {
 
@@ -1846,6 +1848,7 @@ do
             Text = select(1, ...),
             Func = select(2, ...)
         }
+        Button.OriginalText = Button.Text;
         
         assert(typeof(Button.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
@@ -2024,6 +2027,13 @@ do
             if Blank then Blank.Visible = IsVisible end;
 
             Groupbox:Resize();
+        end;
+
+        function Button:SetText(Text)
+            if typeof(Text) == 'string' then
+                Button.Text = Text;
+                Button.Label.Text = Button.Text;
+            end
         end;
 
         Blank = Groupbox:AddBlank(5, IsVisible);
@@ -2265,6 +2275,7 @@ do
             Value = Info.Default or false;
             Type = 'Toggle';
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
+            OriginalText = Info.Text; Text = Info.Text;
 
             Callback = Info.Callback or function(Value) end;
             Addons = {},
@@ -2386,6 +2397,13 @@ do
             Groupbox:Resize();
         end;
 
+        function Toggle:SetText(Text)
+            if typeof(Text) == 'string' then
+                Toggle.Text = Text;
+                ToggleLabel.Text = Toggle.Text;
+            end
+        end;
+
         ToggleRegion.InputBegan:Connect(function(Input)
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                 for _, Addon in next, Toggle.Addons do
@@ -2433,6 +2451,8 @@ do
             Type = 'Slider';
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
             Callback = Info.Callback or function(Value) end;
+
+            OriginalText = Info.Text; Text = Info.Text;
         };
 
         local Blanks = {};
@@ -2538,7 +2558,7 @@ do
             local Suffix = Info.Suffix or '';
 
             if Info.Compact then
-                DisplayLabel.Text = Info.Text .. ': ' .. Slider.Value .. Suffix
+                DisplayLabel.Text = Slider.Text .. ': ' .. Slider.Value .. Suffix
             elseif Info.HideMax then
                 DisplayLabel.Text = string.format('%s', Slider.Value .. Suffix)
             else
@@ -2612,6 +2632,15 @@ do
             end
 
             Groupbox:Resize();
+        end;
+
+        function Slider:SetText(Text)
+            if typeof(Text) == 'string' then
+                Slider.Text = Text;
+
+                if SliderText then SliderText.Text = Slider.Text end;
+                Slider:Display();
+            end
         end;
 
         SliderInner.InputBegan:Connect(function(Input)
@@ -2705,6 +2734,8 @@ do
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
             Callback = Info.Callback or function(Value) end;
+
+            OriginalText = Info.Text; Text = Info.Text;
         };
 
         local DropdownLabel;
@@ -3093,6 +3124,16 @@ do
 
             Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
             Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+        end;
+
+        function Dropdown:SetText(Text)
+            if typeof(Text) == 'string' then
+                if Info.Compact then Info.Compact = false end;
+                Dropdown.Text = Text;
+
+                if DropdownLabel then DropdownLabel.Text = Dropdown.Text end;
+                Dropdown:Display();
+            end
         end;
 
         DropdownOuter.InputBegan:Connect(function(Input)

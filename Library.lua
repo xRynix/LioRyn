@@ -3726,6 +3726,8 @@ function Library:CreateWindow(...)
     
     local Window = {
         Tabs = {};
+
+        OriginalTitle = Config.Title; Title = Config.Title;
     };
 
     local Outer = Library:Create('Frame', {
@@ -3866,16 +3868,21 @@ function Library:CreateWindow(...)
     });
 
     function Window:SetWindowTitle(Title)
-        WindowLabel.Text = Title;
+        if typeof(Title) == 'string' then
+            Window.Title = Text;
+            WindowLabel.Text = Window.Title;
+        end
     end;
 
     function Window:AddTab(Name)
         local Tab = {
             Groupboxes = {};
             Tabboxes = {};
+
+            OriginalName = Name; Name = Name;
         };
 
-        local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
+        local TabButtonWidth = Library:GetTextBounds(Tab.Name, Library.Font, 16);
 
         local TabButton = Library:Create('Frame', {
             BackgroundColor3 = Library.BackgroundColor;
@@ -3893,7 +3900,7 @@ function Library:CreateWindow(...)
         local TabButtonLabel = Library:CreateLabel({
             Position = UDim2.new(0, 0, 0, 0);
             Size = UDim2.new(1, 0, 1, -1);
-            Text = Name;
+            Text = Tab.Name;
             ZIndex = 1;
             Parent = TabButton;
         });
@@ -4150,6 +4157,17 @@ function Library:CreateWindow(...)
 
         function Tab:GetSides()
             return { ["Left"] = LeftSide, ["Right"] = RightSide };
+        end;
+
+        function Tab:SetName(Name)
+            if typeof(Name) == 'string' then
+                Tab.Name = Name;
+
+                local TabButtonWidth = Library:GetTextBounds(Tab.Name, Library.Font, 16);
+
+                TabButton.Size = UDim2.new(0, TabButtonWidth + 8 + 4, 0.85, 0);
+                TabButtonLabel.Text = Tab.Name;
+            end
         end;
 
         function Tab:AddGroupbox(Info)

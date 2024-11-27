@@ -30,10 +30,14 @@ if not Parented then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui", 9e
 
 local Toggles = {};
 local Options = {};
+local Labels = {};
+local Buttons = {};
 
-getgenv().Linoria = { 
-    Toggles = Toggles,
-    Options = Options
+getgenv().Linoria = {
+    Toggles = Toggles;
+    Options = Options;
+    Labels = Labels;
+    Buttons = Buttons;
 }
 
 getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
@@ -83,6 +87,8 @@ local Library = {
     -- for better usage --
     Toggles = Toggles;
     Options = Options;
+    Labels = Labels;
+    Buttons = Buttons;
 };
 
 pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
@@ -1837,7 +1843,10 @@ do
         Groupbox:Resize();
         
         if Data.Idx then
-            Options[Data.Idx] = Label;
+            -- Options[Data.Idx] = Label;
+            Labels[Data.Idx] = Label;
+        else
+            table.insert(Labels, Label);
         end
 
         return Label;
@@ -2039,6 +2048,7 @@ do
         Blank = Groupbox:AddBlank(5, IsVisible);
         Groupbox:Resize();
 
+        table.insert(Buttons, Button);
         return Button;
     end;
 

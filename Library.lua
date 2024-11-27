@@ -3869,7 +3869,7 @@ function Library:CreateWindow(...)
 
     function Window:SetWindowTitle(Title)
         if typeof(Title) == 'string' then
-            Window.Title = Text;
+            Window.Title = Title;
             WindowLabel.Text = Window.Title;
         end
     end;

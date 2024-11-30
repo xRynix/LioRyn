@@ -118,6 +118,14 @@ table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
     end;
 end));
 
+local function GetTableSize(t)
+    local n = 0
+    for _, _ in pairs(t) do
+        n = n + 1
+    end
+    return n   
+end;
+
 local function GetPlayersString()
     local PlayerList = Players:GetPlayers();
 
@@ -2858,7 +2866,7 @@ do
         end;
 
         local function RecalculateListSize(YSize)
-            local Y = YSize or math.clamp(#Dropdown.Values * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1;
+            local Y = YSize or math.clamp(GetTableSize(Dropdown.Values) * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1;
             ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X + 0.5, Y)
         end;
 

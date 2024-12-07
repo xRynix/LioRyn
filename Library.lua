@@ -1170,12 +1170,14 @@ do
 
             ColorPicker.Transparency = Transparency or 0;
             ColorPicker:SetHSVFromRGB(Color);
+
             ColorPicker:Display();
         end;
 
         function ColorPicker:SetValueRGB(Color, Transparency)
             ColorPicker.Transparency = Transparency or 0;
             ColorPicker:SetHSVFromRGB(Color);
+
             ColorPicker:Display();
         end;
 
@@ -1611,9 +1613,11 @@ do
 
         function KeyPicker:SetValue(Data)
             local Key, Mode = Data[1], Data[2];
+
             DisplayLabel.Text = Key;
             KeyPicker.Value = Key;
             if ModeButtons[Mode] then ModeButtons[Mode]:Select(); end
+
             KeyPicker:Update();
         end;
 
@@ -2375,12 +2379,19 @@ do
             Library:AddToolTip(Info.Tooltip, ToggleRegion)
         end
 
-        function Toggle:Display()
-            ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
-            ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
+        function Toggle:Display(usethreadcap)
+            -- fix for the stupid "The current thread cannot access 'Instance' (lacking capability Plugin)" error
+            local success = pcall(function()
+                if usethreadcap == true and typeof(setthreadcaps) == "function" then setthreadcaps(8) end
 
-            Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
-            Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+                Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
+                Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+
+                ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
+                ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
+            end)
+
+            if not success and usethreadcap ~= true then Toggle:Display(true) end
         end;
 
         function Toggle:OnChanged(Func)
@@ -2390,9 +2401,7 @@ do
 
         function Toggle:SetValue(Bool)
             Bool = (not not Bool);
-
             Toggle.Value = Bool;
-            Toggle:Display();
 
             for _, Addon in next, Toggle.Addons do
                 if Addon.Type == 'KeyPicker' and Addon.SyncToggleState then
@@ -2404,6 +2413,8 @@ do
             Library:SafeCallback(Toggle.Callback, Toggle.Value);
             Library:SafeCallback(Toggle.Changed, Toggle.Value);
             Library:UpdateDependencyBoxes();
+
+            Toggle:Display();
         end;
 
         function Toggle:SetVisible(Visibility)
@@ -2633,10 +2644,10 @@ do
             Num = math.clamp(Num, Slider.Min, Slider.Max);
 
             Slider.Value = Num;
-            Slider:Display();
-
             Library:SafeCallback(Slider.Callback, Slider.Value);
             Library:SafeCallback(Slider.Changed, Slider.Value);
+
+            Slider:Display();
         end;
 
         function Slider:SetVisible(Visibility)

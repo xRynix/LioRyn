@@ -53,9 +53,16 @@ local Library = {
     FontColor = Color3.fromRGB(255, 255, 255);
     MainColor = Color3.fromRGB(28, 28, 28);
     BackgroundColor = Color3.fromRGB(20, 20, 20);
+
     AccentColor = Color3.fromRGB(0, 85, 255);
+    DisabledAccentColor = Color3.fromRGB(142, 142, 142);
+
     OutlineColor = Color3.fromRGB(50, 50, 50);
-    RiskColor = Color3.fromRGB(255, 50, 50),
+    DisabledOutlineColor = Color3.fromRGB(70, 70, 70);
+
+    DisabledTextColor = Color3.fromRGB(142, 142, 142);
+
+    RiskColor = Color3.fromRGB(255, 50, 50);
 
     Black = Color3.new(0, 0, 0);
     Font = Enum.Font.Code,
@@ -465,10 +472,15 @@ function Library:AddToolTip(InfoStr, HoverInstance)
         TextColor3 = 'FontColor',
     });
 
+    local TooltipTable = {
+        Tooltip = Tooltip;
+        Disabled = false;
+    }
     local IsHovering = false
 
     HoverInstance.MouseEnter:Connect(function()
-        if Library:MouseIsOverOpenedFrame() then
+        if Library:MouseIsOverOpenedFrame() or TooltipTable.Disabled then
+            Tooltip.Visible = false
             return
         end
 
@@ -479,6 +491,13 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 
         while IsHovering do
             RunService.Heartbeat:Wait()
+            if TooltipTable.Disabled then
+                IsHovering = false
+                Tooltip.Visible = false
+
+                break
+            end
+
             Tooltip.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 12)
         end
     end)
@@ -496,6 +515,8 @@ function Library:AddToolTip(InfoStr, HoverInstance)
             end
         end)
     end
+
+    return TooltipTable
 end
 
 function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, condition)
@@ -2293,6 +2314,7 @@ do
             Value = Info.Default or false;
             Type = 'Toggle';
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
+            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
             OriginalText = Info.Text; Text = Info.Text;
 
             Callback = Info.Callback or function(Value) end;
@@ -2301,6 +2323,7 @@ do
         };
 
         local Blank;
+        local Tooltip;
         local Groupbox = self;
         local Container = Groupbox.Container;
 
@@ -2360,6 +2383,10 @@ do
             { BorderColor3 = 'AccentColor' },
             { BorderColor3 = 'Black' },
             function()
+                if Toggle.Disabled then
+                    return false;
+                end;
+
                 for _, Addon in next, Toggle.Addons do
                     if Library:MouseIsOverFrame(Addon.DisplayFrame) then return false end
                 end
@@ -2372,15 +2399,30 @@ do
         end;
 
         if typeof(Info.Tooltip) == 'string' then
-            Library:AddToolTip(Info.Tooltip, ToggleRegion)
+            Tooltip = Library:AddToolTip(Info.Tooltip, ToggleRegion)
         end
 
         function Toggle:Display()
+            if Toggle.Disabled then
+                ToggleLabel.TextColor3 = Library.DisabledTextColor;
+
+                ToggleInner.BackgroundColor3 = Toggle.Value and Library.DisabledAccentColor or Library.MainColor;
+                ToggleInner.BorderColor3 = Library.DisabledOutlineColor;
+
+                Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'DisabledAccentColor' or 'MainColor';
+                Library.RegistryMap[ToggleInner].Properties.BorderColor3 = 'DisabledOutlineColor';
+                Library.RegistryMap[ToggleLabel].Properties.TextColor3 = 'DisabledTextColor';
+                return;
+            end;
+
+            ToggleLabel.TextColor3 = Color3.new(1, 1, 1);
+
             ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
             ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
 
             Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
             Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = nil;
         end;
 
         function Toggle:OnChanged(Func)
@@ -2389,6 +2431,10 @@ do
         end;
 
         function Toggle:SetValue(Bool)
+            if Toggle.Disabled then
+                return;
+            end;
+
             Bool = (not not Bool);
 
             Toggle.Value = Bool;
@@ -2415,6 +2461,15 @@ do
             Groupbox:Resize();
         end;
 
+        function Toggle:SetDisabled(Disabled)
+            Toggle.Disabled = Disabled;
+            if Tooltip then
+                Tooltip.Disabled = Disabled;
+            end
+
+            Toggle:Display();
+        end;
+
         function Toggle:SetText(Text)
             if typeof(Text) == 'string' then
                 Toggle.Text = Text;
@@ -2423,6 +2478,10 @@ do
         end;
 
         ToggleRegion.InputBegan:Connect(function(Input)
+            if Toggle.Disabled then
+                return;
+            end;
+
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                 for _, Addon in next, Toggle.Addons do
                     if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end

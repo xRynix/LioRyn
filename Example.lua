@@ -66,17 +66,16 @@ local Tab2 = TabBox:AddTab('Tab 2')
 -- Arguments: Index, Options
 LeftGroupBox:AddToggle('MyToggle', {
 	Text = 'This is a toggle',
-	Default = true, -- Default value (true / false)
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the toggle
+
+	Default = true, -- Default value (true / false)
 	Disabled = false, -- Will disable the toggle (true / false)
 	Visible = true, -- Will make the toggle invisible (true / false)
+	Risky = false, -- Makes the text red (the color can be changed using Library.RiskColor) (Default value = false)
 
 	Callback = function(Value)
 		print('[cb] MyToggle changed to:', Value)
-	end,
-
-	Visible = true, -- Fully optional (Default value = true)
-	Risky = false -- Makes the text red (the color can be changed using Library.RiskColor) (Default value = false)
+	end
 }):AddColorPicker('ColorPicker1', {
 	Default = Color3.new(1, 0, 0),
 	Title = 'Some color1', -- Optional. Allows you to have a custom color picker title (when you open it)

@@ -475,6 +475,8 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     local TooltipTable = {
         Tooltip = Tooltip;
         Disabled = false;
+
+        Signals = {};
     }
     local IsHovering = false
 
@@ -487,7 +489,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     end
     UpdateText(InfoStr);
 
-    HoverInstance.MouseEnter:Connect(function()
+    table.insert(TooltipTable.Signals, HoverInstance.MouseEnter:Connect(function()
         if Library:MouseIsOverOpenedFrame() then
             Tooltip.Visible = false
             return
@@ -517,24 +519,29 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
 
         IsHovering = false
         Tooltip.Visible = false
-    end)
+    end))
 
-    HoverInstance.MouseLeave:Connect(function()
+    table.insert(TooltipTable.Signals, HoverInstance.MouseLeave:Connect(function()
         IsHovering = false
         Tooltip.Visible = false
-    end)
+    end))
     
     if LibraryMainOuterFrame then
-        LibraryMainOuterFrame:GetPropertyChangedSignal("Visible"):Connect(function() 
+        table.insert(TooltipTable.Signals, LibraryMainOuterFrame:GetPropertyChangedSignal("Visible"):Connect(function() 
             if LibraryMainOuterFrame.Visible == false then
                 IsHovering = false
                 Tooltip.Visible = false
             end
-        end)
+        end))
     end
 
     function TooltipTable:Destroy()
-        Tooltip:Destroy()
+        Tooltip:Destroy();
+
+        for Idx = #TooltipTable.Signals, 1, -1 do
+            local Connection = table.remove(TooltipTable.Signals, Idx);
+            Connection:Disconnect();
+        end
     end
 
     return TooltipTable

@@ -2064,7 +2064,7 @@ do
 
             function SubButton:AddTooltip(tooltip, disabledTooltip)
                 if typeof(tooltip) == 'string' then
-                    if Button.TooltipTable then
+                    if SubButton.TooltipTable then
                         SubButton.TooltipTable:Destroy()
                     end
                 

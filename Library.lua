@@ -438,7 +438,9 @@ function Library:MakeResizable(Instance, MinSize)
     end);
 end;
 
-function Library:AddToolTip(InfoStr, HoverInstance)
+function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
+    DisabledInfoStr = typeof(DisabledInfoStr) == "string" and DisabledInfoStr or nil;
+
     local X, Y = Library:GetTextBounds(InfoStr, Library.Font, 14);
     local Tooltip = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor,
@@ -479,9 +481,17 @@ function Library:AddToolTip(InfoStr, HoverInstance)
     local IsHovering = false
 
     HoverInstance.MouseEnter:Connect(function()
-        if Library:MouseIsOverOpenedFrame() or TooltipTable.Disabled then
+        if Library:MouseIsOverOpenedFrame() then
             Tooltip.Visible = false
             return
+        end
+
+        if TooltipTable.Disabled == true then
+            if DisabledInfoStr == nil then return end
+            
+            Label.Text = DisabledInfoStr;
+        else
+            Label.Text = InfoStr;
         end
 
         IsHovering = true
@@ -491,7 +501,7 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 
         while IsHovering do
             RunService.Heartbeat:Wait()
-            if TooltipTable.Disabled then
+            if TooltipTable.Disabled == true and DisabledInfoStr == nil then
                 IsHovering = false
                 Tooltip.Visible = false
 
@@ -514,6 +524,10 @@ function Library:AddToolTip(InfoStr, HoverInstance)
                 Tooltip.Visible = false
             end
         end)
+    end
+
+    function TooltipTable:Destroy()
+        Tooltip:Destroy()
     end
 
     return TooltipTable
@@ -596,7 +610,8 @@ function Library:MapValue(Value, MinA, MaxA, MinB, MaxB)
 end;
 
 function Library:GetTextBounds(Text, Font, Size, Resolution)
-    local Bounds = TextService:GetTextSize(Text, Size, Font, Resolution or Vector2.new(1920, 1080))
+    -- Ignores rich text formatting --
+    local Bounds = TextService:GetTextSize(Text:gsub("<%/?[%w:]+[^>]*>", ""), Size, Font, Resolution or Vector2.new(1920, 1080))
     return Bounds.X, Bounds.Y
 end;
 
@@ -1980,6 +1995,10 @@ do
             end
 
             Button.Outer.InputBegan:Connect(function(Input)
+                if Button.Disabled then
+                    return;
+                end;
+
                 if not ValidateClick(Input) then return end
                 if Button.Locked then return end
 
@@ -2016,13 +2035,6 @@ do
 
         InitEvents(Button)
 
-        function Button:AddTooltip(tooltip)
-            if typeof(tooltip) == 'string' then
-                Library:AddToolTip(tooltip, self.Outer)
-            end
-            return self
-        end
-
         function Button:AddButton(...)
             local SubButton = typeof(select(1, ...)) == "table" and select(1, ...) or {
                 Text = select(1, ...),
@@ -2039,23 +2051,65 @@ do
             SubButton.Outer.Size = UDim2.new(1, -3, 1, 0)--UDim2.fromOffset(self.Outer.AbsoluteSize.X - 2, self.Outer.AbsoluteSize.Y)
             SubButton.Outer.Parent = self.Outer
 
-            function SubButton:AddTooltip(tooltip)
+            function SubButton:UpdateColors()
+                SubButton.Label.TextColor3 = SubButton.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+            end;
+
+            function SubButton:AddTooltip(tooltip, disabledTooltip)
                 if typeof(tooltip) == 'string' then
-                    Library:AddToolTip(tooltip, self.Outer)
+                    if Button.TooltipTable then
+                        SubButton.TooltipTable:Destroy()
+                    end
+                
+                    SubButton.TooltipTable = Library:AddToolTip(tooltip, disabledTooltip, self.Outer)
+                    SubButton.TooltipTable.Disabled = SubButton.Disabled;
                 end
+
                 return SubButton
             end
 
+            function SubButton:SetDisabled(Disabled)
+                SubButton.Disabled = Disabled;
+
+                if SubButton.TooltipTable then
+                    SubButton.TooltipTable.Disabled = Disabled;
+                end
+    
+                SubButton:UpdateColors();
+            end;
+
             if typeof(SubButton.Tooltip) == 'string' then
-                SubButton:AddTooltip(SubButton.Tooltip)
+                SubButton.TooltipTable = SubButton:AddTooltip(SubButton.Tooltip, SubButton.DisabledTooltip, SubButton.Outer)
+                SubButton.TooltipTable.Disabled = SubButton.Disabled;
             end
 
+            task.delay(0.1, SubButton.UpdateColors, SubButton);
             InitEvents(SubButton)
+
+            table.insert(Buttons, SubButton);
             return SubButton
         end
 
+        function Button:UpdateColors()
+            Button.Label.TextColor3 = Button.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+        end;
+
+        function Button:AddTooltip(tooltip, disabledTooltip)
+            if typeof(tooltip) == 'string' then
+                if Button.TooltipTable then
+                    Button.TooltipTable:Destroy()
+                end
+
+                Button.TooltipTable = Library:AddToolTip(tooltip, disabledTooltip, self.Outer)
+                Button.TooltipTable.Disabled = Button.Disabled;
+            end
+
+            return Button
+        end;
+
         if typeof(Button.Tooltip) == 'string' then
-            Button:AddTooltip(Button.Tooltip)
+            Button.TooltipTable = Button:AddTooltip(Button.Tooltip, Button.DisabledTooltip, Button.Outer)
+            Button.TooltipTable.Disabled = Button.Disabled;
         end
 
         function Button:SetVisible(Visibility)
@@ -2074,6 +2128,17 @@ do
             end
         end;
 
+        function Button:SetDisabled(Disabled)
+            Button.Disabled = Disabled;
+
+            if Button.TooltipTable then
+                Button.TooltipTable.Disabled = Disabled;
+            end
+
+            Button:UpdateColors();
+        end;
+
+        task.delay(0.1, Button.UpdateColors, Button);
         Blank = Groupbox:AddBlank(5, IsVisible);
         Groupbox:Resize();
 
@@ -2120,7 +2185,7 @@ do
         Groupbox:Resize();
     end
 
-    function Funcs:AddInput(Idx, Info)
+    function Funcs:AddInput(Idx, Info) -- TO-DO: missing Visible, Disabled
         assert(Info.Text, 'AddInput: Missing `Text` string.')
 
         local Textbox = {
@@ -2173,7 +2238,7 @@ do
         );
 
         if typeof(Info.Tooltip) == 'string' then
-            Library:AddToolTip(Info.Tooltip, TextBoxOuter)
+            Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, TextBoxOuter)
         end
 
         Library:Create('UIGradient', {
@@ -2315,11 +2380,11 @@ do
             Type = 'Toggle';
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
             Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
+            Risky = typeof(Info.Risky) ~= "boolean" and false or Info.Risky;
             OriginalText = Info.Text; Text = Info.Text;
 
             Callback = Info.Callback or function(Value) end;
-            Addons = {},
-            Risky = Info.Risky,
+            Addons = {};
         };
 
         local Blank;
@@ -2399,7 +2464,8 @@ do
         end;
 
         if typeof(Info.Tooltip) == 'string' then
-            Tooltip = Library:AddToolTip(Info.Tooltip, ToggleRegion)
+            Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, ToggleRegion)
+            Tooltip.Disabled = Toggle.Disabled;
         end
 
         function Toggle:Display()
@@ -2412,21 +2478,25 @@ do
                 Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'DisabledAccentColor' or 'MainColor';
                 Library.RegistryMap[ToggleInner].Properties.BorderColor3 = 'DisabledOutlineColor';
                 Library.RegistryMap[ToggleLabel].Properties.TextColor3 = 'DisabledTextColor';
+
                 return;
             end;
 
-            ToggleLabel.TextColor3 = Color3.new(1, 1, 1);
+            ToggleLabel.TextColor3 = Toggle.Risky and Library.RiskColor or Color3.new(1, 1, 1);
 
             ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
             ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
 
             Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
             Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
-            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = nil;
+
+            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = Toggle.Risky and 'RiskColor' or nil;
         end;
 
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func;
+
+            if Toggle.Disabled then return end;
             Func(Toggle.Value);
         end;
 
@@ -2463,6 +2533,7 @@ do
 
         function Toggle:SetDisabled(Disabled)
             Toggle.Disabled = Disabled;
+
             if Tooltip then
                 Tooltip.Disabled = Disabled;
             end
@@ -2491,10 +2562,12 @@ do
             end;
         end);
 
-        if Toggle.Risky then
+        if Toggle.Risky == true then
             Library:RemoveFromRegistry(ToggleLabel)
+
             ToggleLabel.TextColor3 = Library.RiskColor
             Library:AddToRegistry(ToggleLabel, { TextColor3 = 'RiskColor' })
+            print("set to be risky")
         end
 
         Toggle:Display();
@@ -2527,15 +2600,17 @@ do
             MaxSize = 232;
             Type = 'Slider';
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
-            Callback = Info.Callback or function(Value) end;
-
+            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
             OriginalText = Info.Text; Text = Info.Text;
+
+            Callback = Info.Callback or function(Value) end;
         };
 
         local Blanks = {};
         local SliderText = nil;
         local Groupbox = self;
         local Container = Groupbox.Container;
+        local Tooltip;
 
         if not Info.Compact then
             SliderText = Library:CreateLabel({
@@ -2619,16 +2694,32 @@ do
 
         Library:OnHighlight(SliderOuter, SliderOuter,
             { BorderColor3 = 'AccentColor' },
-            { BorderColor3 = 'Black' }
+            { BorderColor3 = 'Black' },
+            function()
+                return not Slider.Disabled;
+            end
         );
 
         if typeof(Info.Tooltip) == 'string' then
-            Library:AddToolTip(Info.Tooltip, SliderOuter)
+            Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, SliderOuter)
+            Tooltip.Disabled = Slider.Disabled;
         end
 
         function Slider:UpdateColors()
-            Fill.BackgroundColor3 = Library.AccentColor;
-            Fill.BorderColor3 = Library.AccentColorDark;
+            if SliderText then
+                SliderText.TextColor3 = Slider.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+            end;
+            DisplayLabel.TextColor3 = Slider.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+
+            HideBorderRight.BackgroundColor3 = Slider.Disabled and Library.DisabledAccentColor or Library.AccentColor;
+
+            Fill.BackgroundColor3 = Slider.Disabled and Library.DisabledAccentColor or Library.AccentColor;
+            Fill.BorderColor3 = Slider.Disabled and Library.DisabledOutlineColor or Library.AccentColorDark;
+
+            Library.RegistryMap[HideBorderRight].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor';
+
+            Library.RegistryMap[Fill].Properties.BackgroundColor3 = Slider.Disabled and 'DisabledAccentColor' or 'AccentColor';
+            Library.RegistryMap[Fill].Properties.BorderColor3 = Slider.Disabled and 'DisabledOutlineColor' or 'AccentColorDark';
         end;
         
         function Slider:Display()
@@ -2650,6 +2741,10 @@ do
         end;
 
         function Slider:OnChanged(Func)
+            if Slider.Disabled then
+                return;
+            end;
+
             Slider.Changed = Func;
             Func(Slider.Value);
         end;
@@ -2683,6 +2778,10 @@ do
         end;
 
         function Slider:SetValue(Str)
+            if Slider.Disabled then
+                return;
+            end;
+
             local Num = tonumber(Str);
 
             if (not Num) then
@@ -2711,6 +2810,16 @@ do
             Groupbox:Resize();
         end;
 
+        function Slider:SetDisabled(Disabled)
+            Slider.Disabled = Disabled;
+
+            if Tooltip then
+                Tooltip.Disabled = Disabled;
+            end
+
+            Slider:UpdateColors();
+        end;
+
         function Slider:SetText(Text)
             if typeof(Text) == 'string' then
                 Slider.Text = Text;
@@ -2721,6 +2830,10 @@ do
         end;
 
         SliderInner.InputBegan:Connect(function(Input)
+            if Slider.Disabled then
+                return;
+            end;
+
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                 if Library.IsMobile then
                     Library.CanDrag = false;
@@ -2778,6 +2891,7 @@ do
             end;
         end);
 
+        task.delay(0.1, Slider.UpdateColors, Slider);
         Slider:Display();
         table.insert(Blanks, Groupbox:AddBlank(Info.BlankSize or 6, Slider.Visible));
         Groupbox:Resize();
@@ -2810,6 +2924,7 @@ do
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
             Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
+            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
             Callback = Info.Callback or function(Value) end;
 
             OriginalText = Info.Text; Text = Info.Text;
@@ -2818,6 +2933,7 @@ do
         local DropdownLabel;
         local Blank;
         local CompactBlank;
+        local Tooltip;
         local Groupbox = self;
         local Container = Groupbox.Container;
 
@@ -2903,11 +3019,15 @@ do
 
         Library:OnHighlight(DropdownOuter, DropdownOuter,
             { BorderColor3 = 'AccentColor' },
-            { BorderColor3 = 'Black' }
+            { BorderColor3 = 'Black' },
+            function()
+                return not Dropdown.Disabled;
+            end
         );
 
         if typeof(Info.Tooltip) == 'string' then
-            Library:AddToolTip(Info.Tooltip, DropdownOuter)
+            Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, DropdownOuter)
+            Tooltip.Disabled = Dropdown.Disabled;
         end
 
         local MAX_DROPDOWN_ITEMS = 8;
@@ -2974,6 +3094,15 @@ do
             SortOrder = Enum.SortOrder.LayoutOrder;
             Parent = Scrolling;
         });
+
+        function Dropdown:UpdateColors()
+            if DropdownLabel then
+                DropdownLabel.TextColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+            end;
+
+            ItemList.TextColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+            DropdownArrow.ImageColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
+        end;
 
         function Dropdown:Display()
             local Values = Dropdown.Values;
@@ -3145,12 +3274,31 @@ do
             if DropdownLabel then DropdownLabel.Visible = Dropdown.Visible end;
             if Blank then Blank.Visible = Dropdown.Visible end;
             if CompactBlank then CompactBlank.Visible = Dropdown.Visible end;
-            if not Dropdown.Visible then Dropdown:CloseDropdown() end;
+            if not Dropdown.Visible then Dropdown:CloseDropdown(); end;
 
             Groupbox:Resize();
         end;
 
+        function Dropdown:SetDisabled(Disabled)
+            Dropdown.Disabled = Disabled;
+
+            if Tooltip then
+                Tooltip.Disabled = Disabled;
+            end
+
+            if Disabled then
+                Dropdown:CloseDropdown();
+            end
+
+            Dropdown:Display();
+            Dropdown:UpdateColors();
+        end;
+
         function Dropdown:OpenDropdown()
+            if Dropdown.Disabled then
+                return;
+            end;
+
             if Library.IsMobile then
                 Library.CanDrag = false;
             end;
@@ -3174,6 +3322,10 @@ do
 
         function Dropdown:OnChanged(Func)
             Dropdown.Changed = Func;
+
+            if Dropdown.Disabled then
+                return;
+            end;
             Func(Dropdown.Value);
         end;
 
@@ -3213,6 +3365,10 @@ do
         end;
 
         DropdownOuter.InputBegan:Connect(function(Input)
+            if Dropdown.Disabled then
+                return;
+            end;
+
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
                 if ListOuter.Visible then
                     Dropdown:CloseDropdown();
@@ -3223,6 +3379,10 @@ do
         end);
 
         InputService.InputBegan:Connect(function(Input)
+            if Dropdown.Disabled then
+                return;
+            end;
+
             if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                 local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize;
 
@@ -3271,6 +3431,7 @@ do
             Dropdown:Display();
         end
 
+        task.delay(0.1, Dropdown.UpdateColors, Dropdown)
         Blank = Groupbox:AddBlank(Info.BlankSize or 5, Dropdown.Visible);
         Groupbox:Resize();
 

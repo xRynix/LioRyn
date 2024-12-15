@@ -2,6 +2,37 @@ local cloneref = (cloneref or clonereference or function(instance: any) return i
 local httpService = cloneref(game:GetService('HttpService'))
 local httprequest = (syn and syn.request) or (http and http.request) or request
 local getassetfunc = getcustomasset or getsynasset
+local isfolder, isfile, listfiles = isfolder, isfile, listfiles;
+
+if typeof(copyfunction) == "function" then
+    -- Fix is_____ functions for shitsploits, those functions should never error, only return a boolean.
+
+    local
+        isfolder_copy,
+        isfile_copy,
+        listfiles_copy = copyfunction(isfolder), copyfunction(isfile), copyfunction(listfiles);
+
+    local isfolder_success, isfolder_error = pcall(function()
+        return isfolder_copy("test" .. tostring(math.random(1000000, 9999999)))
+    end);
+
+    if isfolder_success == false or typeof(isfolder_error) ~= "boolean" then
+        isfolder = function(folder)
+            local success, data = pcall(isfolder_copy, folder)
+            return (if success then data else false)
+        end;
+
+        isfile = function(file)
+            local success, data = pcall(isfile_copy, file)
+            return (if success then data else false)
+        end;
+
+        listfiles = function(folder)
+            local success, data = pcall(listfiles_copy, folder)
+            return (if success then data else {})
+        end;
+    end
+end
 
 local ThemeManager = {} do
 	ThemeManager.Folder = 'LinoriaLibSettings'
@@ -54,7 +85,7 @@ local ThemeManager = {} do
 		self.Library = library
 	end
 
-	--// Foldes \\--
+	--// Folders \\--
 	function ThemeManager:GetPaths()
 	    local paths = {}
 

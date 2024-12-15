@@ -527,7 +527,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     end))
     
     if LibraryMainOuterFrame then
-        table.insert(TooltipTable.Signals, LibraryMainOuterFrame:GetPropertyChangedSignal("Visible"):Connect(function() 
+        table.insert(TooltipTable.Signals, LibraryMainOuterFrame:GetPropertyChangedSignal("Visible"):Connect(function()
             if LibraryMainOuterFrame.Visible == false then
                 IsHovering = false
                 Tooltip.Visible = false

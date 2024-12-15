@@ -1,6 +1,6 @@
 local cloneref = (cloneref or clonereference or function(instance: any) return instance end)
 local httpService = cloneref(game:GetService('HttpService'))
-local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+local httprequest = (syn and syn.request) or (http and http.request) or request
 local getassetfunc = getcustomasset or getsynasset
 
 local ThemeManager = {} do
@@ -19,43 +19,35 @@ local ThemeManager = {} do
 		['Quartz'] 			= { 8, httpService:JSONDecode('{"FontColor":"ffffff","MainColor":"232330","AccentColor":"426e87","BackgroundColor":"1d1b26","OutlineColor":"27232f"}') },
 	}
 
-	function ApplyBackgroundVideo(webmLink)
-		if writefile == nil or readfile == nil or isfile == nil then return end
-		if ThemeManager.Library == nil then return end
-		if ThemeManager.Library.InnerVideoBackground == nil then return end
+	function ApplyBackgroundVideo(videoLink)
+		if
+			not (videoLink and getassetfunc and writefile and readfile and isfile) or
+			not (ThemeManager.Library and ThemeManager.Library.InnerVideoBackground)
+		then
+			return;
+		end;
 
-		if string.sub(tostring(webmLink), -5) == ".webm" then
-			local CurrentSaved = ""
-			if isfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt') then
-				CurrentSaved = readfile(ThemeManager.Folder .. '/themes/currentVideoLink.txt')
-			end
-			
-			local VideoData = nil;
-			if CurrentSaved == tostring(webmLink) then
-				VideoData = {
-					Success = true,
-					Body = nil
-				}
-			else
-				VideoData = httprequest({
-					Url = tostring(webmLink),
-					Method = 'GET'
-				})
-			end
-			
-			if (VideoData.Success) then
-				VideoData = VideoData.Body
-				if (isfile(ThemeManager.Folder .. '/themes/currentVideo.webm') == false and VideoData ~= nil) or VideoData ~= nil then
-					writefile(ThemeManager.Folder .. '/themes/currentVideo.webm', VideoData)
-					writefile(ThemeManager.Folder .. '/themes/currentVideoLink.txt', tostring(webmLink))
-				end
-				
-				local Video = getassetfunc(ThemeManager.Folder .. '/themes/currentVideo.webm')
-				ThemeManager.Library.InnerVideoBackground.Video = Video
-				ThemeManager.Library.InnerVideoBackground.Visible = true
-				ThemeManager.Library.InnerVideoBackground:Play()
-			end
+		videoLink = tostring(videoLink)
+		if string.sub(videoLink, -5) ~= ".webm" then return end
+
+		--// Data \\--
+		local videoFile, linkFile = ThemeManager.Folder .. '/themes/video.webm', ThemeManager.Folder .. '/themes/videolink.txt';
+		local savedVideoLink = (isfile(linkFile) and readfile(linkFile));
+		local videoInstance = ThemeManager.Library.InnerVideoBackground
+
+		--// Fetch Video Data \\--
+		if savedVideoLink ~= videoLink then
+			local success, requestRes = pcall(httprequest, { Url = videoLink, Method = 'GET' })
+			if not success then return end;
+
+			writefile(videoFile, requestRes)
+			writefile(linkFile, videoLink)
 		end
+
+		--// Play Video \\--
+		videoInstance.Video = getassetfunc(videoFile);
+		videoInstance.Visible = true;
+		videoInstance:Play();
 	end
 
 	function ThemeManager:SetLibrary(library)
@@ -112,13 +104,7 @@ local ThemeManager = {} do
 		
 		local scheme = data[2]
 		for idx, col in next, customThemeData or scheme do
-			if idx ~= "VideoLink" then
-				self.Library[idx] = Color3.fromHex(col)
-				
-				if self.Library.Options[idx] then
-					self.Library.Options[idx]:SetValueRGB(Color3.fromHex(col))
-				end
-			else
+			if idx == "VideoLink" then
 				self.Library[idx] = col
 				
 				if self.Library.Options[idx] then
@@ -126,6 +112,12 @@ local ThemeManager = {} do
 				end
 				
 				ApplyBackgroundVideo(col)
+			else
+				self.Library[idx] = Color3.fromHex(col)
+				
+				if self.Library.Options[idx] then
+					self.Library.Options[idx]:SetValueRGB(Color3.fromHex(col))
+				end
 			end
 		end
 
@@ -137,11 +129,12 @@ local ThemeManager = {} do
 		if self.Library.InnerVideoBackground ~= nil then
 			self.Library.InnerVideoBackground.Visible = false
 		end
-		
+
 		local options = { "FontColor", "MainColor", "AccentColor", "BackgroundColor", "OutlineColor", "VideoLink" }
 		for i, field in next, options do
 			if self.Library.Options and self.Library.Options[field] then
 				self.Library[field] = self.Library.Options[field].Value
+
 				if field == "VideoLink" then
 					ApplyBackgroundVideo(self.Library.Options[field].Value)
 				end
@@ -223,7 +216,7 @@ local ThemeManager = {} do
 		local file = self.Folder .. '/themes/' .. name .. '.json'
 		if not isfile(file) then return false, 'invalid file' end
 
-		local success, decoded = pcall(delfile, file)
+		local success = pcall(delfile, file)
 		if not success then return false, 'delete file error' end
 		
 		return true

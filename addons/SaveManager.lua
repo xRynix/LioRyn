@@ -11,7 +11,7 @@ if typeof(copyfunction) == "function" then
         listfiles_copy = copyfunction(isfolder), copyfunction(isfile), copyfunction(listfiles);
 
     local isfolder_success, isfolder_error = pcall(function()
-        return isfolder_copy(tostring(math.random(89844498, 999999999)))
+        return isfolder_copy("test" .. tostring(math.random(1000000, 9999999)))
     end);
 
     if isfolder_success == false or typeof(isfolder_error) ~= "boolean" then
@@ -267,7 +267,7 @@ local SaveManager = {} do
 
         if not isfile(file) then return false, 'invalid file' end
 
-        local success, decoded = pcall(delfile, file)
+        local success = pcall(delfile, file)
         if not success then return false, 'delete file error' end
 
         return true

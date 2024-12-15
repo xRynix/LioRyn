@@ -67,6 +67,7 @@ local Tab2 = TabBox:AddTab('Tab 2')
 LeftGroupBox:AddToggle('MyToggle', {
 	Text = 'This is a toggle',
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the toggle
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the toggle while it's disabled
 
 	Default = true, -- Default value (true / false)
 	Disabled = false, -- Will disable the toggle (true / false)
@@ -142,7 +143,12 @@ local MyButton = LeftGroupBox:AddButton({
 		Library:Notify("This is a notification")
 	end,
 	DoubleClick = false,
-	Tooltip = 'This is the main button'
+
+	Tooltip = 'This is the main button',
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the button while it's disabled
+
+	Disabled = false, -- Will disable the button (true / false)
+	Visible = true -- Will make the button invisible (true / false)
 })
 
 local MyButton2 = MyButton:AddButton({
@@ -153,6 +159,17 @@ local MyButton2 = MyButton:AddButton({
 	end,
 	DoubleClick = true, -- You will have to click this button twice to trigger the callback
 	Tooltip = 'This is the sub button (double click me!)'
+})
+
+local MyDisabledButton = LeftGroupBox:AddButton({
+	Text = 'Disabled Button',
+	Func = function()
+		print('You somehow clicked a disabled button!')
+	end,
+	DoubleClick = false,
+	Tooltip = 'This is a disabled button',
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the button while it's disabled
+	Disabled = true
 })
 
 --[[
@@ -223,7 +240,11 @@ LeftGroupBox:AddSlider('MySlider', {
 		print('[cb] MySlider was changed! New value:', Value)
 	end,
 
-	Visible = true -- Fully optional (Default value = true)
+	Tooltip = 'I am a slider!', -- Information shown when you hover over the slider
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the slider while it's disabled
+
+	Disabled = false, -- Will disable the slider (true / false)
+	Visible = true, -- Will make the slider invisible (true / false)
 })
 
 -- Options is a table added to getgenv() by the library
@@ -271,10 +292,14 @@ LeftGroupBox:AddDropdown('MyDropdown', {
 
 	Text = 'A dropdown',
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
 
 	Callback = function(Value)
 		print('[cb] Dropdown got changed. New value:', Value)
-	end
+	end,
+
+	Disabled = false, -- Will disable the dropdown (true / false)
+	Visible = true, -- Will make the dropdown invisible (true / false)
 })
 
 Options.MyDropdown:OnChanged(function()

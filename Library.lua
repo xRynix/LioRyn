@@ -85,7 +85,7 @@ local Library = {
     CantDragForced = false;
 
     NotifySide = "Left";
-    ShowCustomCursor = true; 
+    ShowCustomCursor = true;
     ShowToggleFrameInKeybinds = true;
 
     VideoLink = "";
@@ -426,10 +426,10 @@ function Library:MakeResizable(Instance, MinSize)
     end);
 
     ResizerImage.MouseEnter:Connect(function()
-        FinishResize(ResizerImage_HoverTransparency);		
+        FinishResize(ResizerImage_HoverTransparency);	
     end);
 
-    ResizerImage.MouseLeave:Connect(function() 
+    ResizerImage.MouseLeave:Connect(function()
         FinishResize(1);
     end);
 
@@ -441,26 +441,24 @@ end;
 function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     DisabledInfoStr = typeof(DisabledInfoStr) == "string" and DisabledInfoStr or nil;
 
-    local X, Y = Library:GetTextBounds(InfoStr, Library.Font, 14);
     local Tooltip = Library:Create('Frame', {
-        BackgroundColor3 = Library.MainColor,
-        BorderColor3 = Library.OutlineColor,
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.OutlineColor;
 
-        Size = UDim2.fromOffset(X + 5, Y + 4),
-        ZIndex = 100,
-        Parent = Library.ScreenGui,
+        ZIndex = 100;
+        Parent = Library.ScreenGui;
 
-        Visible = false,
+        Visible = false;
     });
 
     local Label = Library:CreateLabel({
-        Position = UDim2.fromOffset(3, 1),
-        Size = UDim2.fromOffset(X, Y);
+        Position = UDim2.fromOffset(3, 1);
+        
         TextSize = 14;
-        Text = InfoStr,
-        TextColor3 = Library.FontColor,
+        Text = InfoStr;
+        TextColor3 = Library.FontColor;
         TextXAlignment = Enum.TextXAlignment.Left;
-        ZIndex = Tooltip.ZIndex + 1,
+        ZIndex = Tooltip.ZIndex + 1;
 
         Parent = Tooltip;
     });
@@ -480,6 +478,15 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     }
     local IsHovering = false
 
+    local function UpdateText(Text)
+        local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
+
+        Label.Text = Text;
+        Tooltip.Size = UDim2.fromOffset(X + 5, Y + 4);
+        Label.Size = UDim2.fromOffset(X, Y);
+    end
+    UpdateText(InfoStr);
+
     HoverInstance.MouseEnter:Connect(function()
         if Library:MouseIsOverOpenedFrame() then
             Tooltip.Visible = false
@@ -487,11 +494,13 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
         end
 
         if TooltipTable.Disabled == true then
-            if DisabledInfoStr == nil then return end
-            
-            Label.Text = DisabledInfoStr;
+            if DisabledInfoStr == nil then
+                return
+            end
+
+            UpdateText(DisabledInfoStr);
         else
-            Label.Text = InfoStr;
+            if Label.Text ~= InfoStr then UpdateText(InfoStr); end
         end
 
         IsHovering = true
@@ -500,16 +509,14 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
         Tooltip.Visible = true
 
         while IsHovering do
+            if TooltipTable.Disabled == true and DisabledInfoStr == nil then break end
+
             RunService.Heartbeat:Wait()
-            if TooltipTable.Disabled == true and DisabledInfoStr == nil then
-                IsHovering = false
-                Tooltip.Visible = false
-
-                break
-            end
-
             Tooltip.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 12)
         end
+
+        IsHovering = false
+        Tooltip.Visible = false
     end)
 
     HoverInstance.MouseLeave:Connect(function()

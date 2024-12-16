@@ -2310,6 +2310,8 @@ do
                 end
             end
 
+            if Textbox.Value == Text then return end;
+
             Textbox.Value = Text;
             Box.Text = Text;
 
@@ -2520,6 +2522,8 @@ do
             end;
 
             Bool = (not not Bool);
+
+            if Toggle.Value == Bool then return end;
 
             Toggle.Value = Bool;
             Toggle:Display();
@@ -2802,6 +2806,8 @@ do
             end;
 
             Num = math.clamp(Num, Slider.Min, Slider.Max);
+
+            if Slider.Value == Num then return end;
 
             Slider.Value = Num;
             Slider:Display();

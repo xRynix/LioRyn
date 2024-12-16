@@ -350,6 +350,24 @@ LeftGroupBox:AddDropdown('MyPlayerDropdown', {
 	end
 })
 
+LeftGroupBox:AddDropdown('MyDisabledValueDropdown', {
+    Values = { 'This', 'is', 'a', 'dropdown' },
+    DisabledValues = {"disabled"}, -- Disabled Values that are unclickable
+    Default = 1, -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'A dropdown with disabled value',
+    Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+    DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+    Callback = function(Value)
+        print('[cb] Dropdown got changed. New value:', Value)
+    end,
+
+    Disabled = false, -- Will disable the dropdown (true / false)
+    Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
 -- Label:AddColorPicker
 -- Arguments: Idx, Info
 

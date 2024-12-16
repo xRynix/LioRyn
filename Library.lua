@@ -2581,7 +2581,6 @@ do
 
             ToggleLabel.TextColor3 = Library.RiskColor
             Library:AddToRegistry(ToggleLabel, { TextColor3 = 'RiskColor' })
-            print("set to be risky")
         end
 
         Toggle:Display();
@@ -2934,6 +2933,7 @@ do
         local Dropdown = {
             Values = Info.Values;
             Value = Info.Multi and {};
+			DisabledValues = Info.DisabledValues or {};
             Multi = Info.Multi;
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
@@ -3153,6 +3153,7 @@ do
 
         function Dropdown:BuildDropdownList()
             local Values = Dropdown.Values;
+			local DisabledValues = Dropdown.DisabledValues;
             local Buttons = {};
 
             for _, Element in next, Scrolling:GetChildren() do
@@ -3262,6 +3263,55 @@ do
                 Buttons[Button] = Table;
             end;
 
+	        for Idx, Value in next, DisabledValues do
+                local Table = {};
+
+                Count = Count + 1;
+
+                local Button = Library:Create('TextButton', {
+                    AutoButtonColor = false,
+                    BackgroundColor3 = Library.MainColor;
+                    BorderColor3 = Library.OutlineColor;
+                    BorderMode = Enum.BorderMode.Middle;
+                    Size = UDim2.new(1, -1, 0, 20);
+                    Text = '';
+                    ZIndex = 23;
+                    Parent = Scrolling;
+                });
+
+                Library:AddToRegistry(Button, {
+                    BackgroundColor3 = 'MainColor';
+                    BorderColor3 = 'OutlineColor';
+                });
+
+                local ButtonLabel = Library:CreateLabel({
+                    Active = false;
+                    Size = UDim2.new(1, -6, 1, 0);
+                    Position = UDim2.new(0, 6, 0, 0);
+                    TextSize = 14;
+                    Text = Value;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    TextColor3 = Library.DisabledAccentColor;
+                    ZIndex = 25;
+                    Parent = Button;
+                });
+
+                Library:OnHighlight(Button, Button,
+                    { BorderColor3 = 'DisabledAccentColor', ZIndex = 24 },
+                    { BorderColor3 = 'OutlineColor', ZIndex = 23 }
+                );
+
+				function Table:UpdateButton()
+                    ButtonLabel.TextColor3 = Library.DisabledAccentColor;
+                    Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Library.DisabledAccentColor;
+                end;
+
+				Table:UpdateButton();
+                Dropdown:Display();
+
+				Buttons[Button] = Table;
+            end;
+
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * 20) + 1);
 
             -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
@@ -3280,6 +3330,14 @@ do
 
             Dropdown:BuildDropdownList();
         end;
+
+		function Dropdown:SetDisabledValues(NewValues)
+			if NewValues then
+				Dropdown.DisabledValues = NewValues;
+			end;
+
+			Dropdown:BuildDropdownList();
+		end
 
         function Dropdown:SetVisible(Visibility)
             Dropdown.Visible = Visibility;

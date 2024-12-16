@@ -3263,7 +3263,7 @@ do
                 Buttons[Button] = Table;
             end;
 
-			for Idx, Value in next, DisabledValues do
+	        for Idx, Value in next, DisabledValues do
                 local Table = {};
 
                 Count = Count + 1;
@@ -3291,13 +3291,13 @@ do
                     TextSize = 14;
                     Text = Value;
                     TextXAlignment = Enum.TextXAlignment.Left;
-					TextColor3 = Library.DisabledAccentColor;
+                    TextColor3 = Library.DisabledAccentColor;
                     ZIndex = 25;
                     Parent = Button;
                 });
 
                 Library:OnHighlight(Button, Button,
-                    { BorderColor3 = 'AccentColor', ZIndex = 24 },
+                    { BorderColor3 = 'DisabledAccentColor', ZIndex = 24 },
                     { BorderColor3 = 'OutlineColor', ZIndex = 23 }
                 );
 

@@ -495,14 +495,15 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
             return
         end
 
-        if TooltipTable.Disabled == true then
+        if TooltipTable.Disabled == false then
+            if Label.Text ~= InfoStr then UpdateText(InfoStr); end
+        else
             if DisabledInfoStr == nil then
+                Tooltip.Visible = false
                 return
             end
 
-            UpdateText(DisabledInfoStr);
-        else
-            if Label.Text ~= InfoStr then UpdateText(InfoStr); end
+            if Label.Text ~= DisabledInfoStr then UpdateText(DisabledInfoStr); end
         end
 
         IsHovering = true

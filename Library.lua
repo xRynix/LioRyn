@@ -188,7 +188,7 @@ end;
 function Library:Create(Class, Properties)
     local _Instance = Class;
 
-    if typeof(Class) == 'string' then
+    if typeof(Class) == "string" then
         _Instance = Instance.new(Class);
     end;
 
@@ -439,6 +439,7 @@ function Library:MakeResizable(Instance, MinSize)
 end;
 
 function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
+    InfoStr = typeof(InfoStr) == "string" and InfoStr or nil;
     DisabledInfoStr = typeof(DisabledInfoStr) == "string" and DisabledInfoStr or nil;
 
     local Tooltip = Library:Create('Frame', {
@@ -481,6 +482,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     local IsHovering = false
 
     local function UpdateText(Text)
+        if Text == nil then return end
         local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
 
         Label.Text = Text;
@@ -495,7 +497,12 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
             return
         end
 
-        if TooltipTable.Disabled == false then
+        if not TooltipTable.Disabled then
+            if InfoStr == nil then
+                Tooltip.Visible = false
+                return
+            end
+
             if Label.Text ~= InfoStr then UpdateText(InfoStr); end
         else
             if DisabledInfoStr == nil then
@@ -685,7 +692,7 @@ function Library:UpdateColorsUsingRegistry()
 
     for Idx, Object in next, Library.Registry do
         for Property, ColorIdx in next, Object.Properties do
-            if typeof(ColorIdx) == 'string' then
+            if typeof(ColorIdx) == "string" then
                 Object.Instance[Property] = Library[ColorIdx];
             elseif typeof(ColorIdx) == 'function' then
                 Object.Instance[Property] = ColorIdx()
@@ -740,7 +747,7 @@ do
             Value = Info.Default;
             Transparency = Info.Transparency or 0;
             Type = 'ColorPicker';
-            Title = typeof(Info.Title) == 'string' and Info.Title or 'Color picker',
+            Title = typeof(Info.Title) == "string" and Info.Title or 'Color picker',
             Callback = Info.Callback or function(Color) end;
         };
 
@@ -2071,7 +2078,7 @@ do
             end;
 
             function SubButton:AddTooltip(tooltip, disabledTooltip)
-                if typeof(tooltip) == 'string' then
+                if typeof(tooltip) == "string" or typeof(disabledTooltip) == "string" then
                     if SubButton.TooltipTable then
                         SubButton.TooltipTable:Destroy()
                     end
@@ -2093,7 +2100,7 @@ do
                 SubButton:UpdateColors();
             end;
 
-            if typeof(SubButton.Tooltip) == 'string' then
+            if typeof(SubButton.Tooltip) == "string" or typeof(SubButton.DisabledTooltip) == "string" then
                 SubButton.TooltipTable = SubButton:AddTooltip(SubButton.Tooltip, SubButton.DisabledTooltip, SubButton.Outer)
                 SubButton.TooltipTable.Disabled = SubButton.Disabled;
             end
@@ -2110,7 +2117,7 @@ do
         end;
 
         function Button:AddTooltip(tooltip, disabledTooltip)
-            if typeof(tooltip) == 'string' then
+            if typeof(tooltip) == "string" or typeof(disabledTooltip) == "string" then
                 if Button.TooltipTable then
                     Button.TooltipTable:Destroy()
                 end
@@ -2122,7 +2129,7 @@ do
             return Button
         end;
 
-        if typeof(Button.Tooltip) == 'string' then
+        if typeof(Button.Tooltip) == "string" or typeof(Button.DisabledTooltip) == "string" then
             Button.TooltipTable = Button:AddTooltip(Button.Tooltip, Button.DisabledTooltip, Button.Outer)
             Button.TooltipTable.Disabled = Button.Disabled;
         end
@@ -2137,7 +2144,7 @@ do
         end;
 
         function Button:SetText(Text)
-            if typeof(Text) == 'string' then
+            if typeof(Text) == "string" then
                 Button.Text = Text;
                 Button.Label.Text = Button.Text;
             end
@@ -2252,7 +2259,7 @@ do
             { BorderColor3 = 'Black' }
         );
 
-        if typeof(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == "string" then
             Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, TextBoxOuter)
         end
 
@@ -2478,7 +2485,7 @@ do
             Toggle:Display();
         end;
 
-        if typeof(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == "string" or typeof(Info.DisabledTooltip) == "string" then
             Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, ToggleRegion)
             Tooltip.Disabled = Toggle.Disabled;
         end
@@ -2557,7 +2564,7 @@ do
         end;
 
         function Toggle:SetText(Text)
-            if typeof(Text) == 'string' then
+            if typeof(Text) == "string" then
                 Toggle.Text = Text;
                 ToggleLabel.Text = Toggle.Text;
             end
@@ -2714,7 +2721,7 @@ do
             end
         );
 
-        if typeof(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == "string" or typeof(Info.DisabledTooltip) == "string" then
             Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, SliderOuter)
             Tooltip.Disabled = Slider.Disabled;
         end
@@ -2835,7 +2842,7 @@ do
         end;
 
         function Slider:SetText(Text)
-            if typeof(Text) == 'string' then
+            if typeof(Text) == "string" then
                 Slider.Text = Text;
 
                 if SliderText then SliderText.Text = Slider.Text end;
@@ -3040,7 +3047,7 @@ do
             end
         );
 
-        if typeof(Info.Tooltip) == 'string' then
+        if typeof(Info.Tooltip) == "string" or typeof(Info.DisabledTooltip) == "string" then
             Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, DropdownOuter)
             Tooltip.Disabled = Dropdown.Disabled;
         end
@@ -3428,7 +3435,7 @@ do
         end;
 
         function Dropdown:SetText(Text)
-            if typeof(Text) == 'string' then
+            if typeof(Text) == "string" then
                 if Info.Compact then Info.Compact = false end;
                 Dropdown.Text = Text;
 
@@ -3472,7 +3479,7 @@ do
 
         local Defaults = {}
 
-        if typeof(Info.Default) == 'string' then
+        if typeof(Info.Default) == "string" then
             local Idx = table.find(Dropdown.Values, Info.Default)
             if Idx then
                 table.insert(Defaults, Idx)
@@ -4006,10 +4013,10 @@ function Library:CreateWindow(...)
         Config.AutoShow = Arguments[2] or false;
     end
 
-    if typeof(Config.Title) ~= 'string' then Config.Title = 'No title' end
+    if typeof(Config.Title) ~= "string" then Config.Title = 'No title' end
     if typeof(Config.TabPadding) ~= 'number' then Config.TabPadding = 1 end
     if typeof(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
-    if typeof(Config.NotifySide) ~= 'string' then Library.NotifySide = 'Left' else Library.NotifySide = Config.NotifySide end
+    if typeof(Config.NotifySide) ~= "string" then Library.NotifySide = 'Left' else Library.NotifySide = Config.NotifySide end
     if typeof(Config.ShowCustomCursor) ~= 'boolean' then Library.ShowCustomCursor = true else Library.ShowCustomCursor = Config.ShowCustomCursor end
 
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
@@ -4178,7 +4185,7 @@ function Library:CreateWindow(...)
     });
 
     function Window:SetWindowTitle(Title)
-        if typeof(Title) == 'string' then
+        if typeof(Title) == "string" then
             Window.Title = Title;
             WindowLabel.Text = Window.Title;
         end
@@ -4470,7 +4477,7 @@ function Library:CreateWindow(...)
         end;
 
         function Tab:SetName(Name)
-            if typeof(Name) == 'string' then
+            if typeof(Name) == "string" then
                 Tab.Name = Name;
 
                 local TabButtonWidth = Library:GetTextBounds(Tab.Name, Library.Font, 16);

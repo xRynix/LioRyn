@@ -2941,7 +2941,7 @@ do
         local Dropdown = {
             Values = Info.Values;
             Value = Info.Multi and {};
-			DisabledValues = Info.DisabledValues or {};
+            DisabledValues = Info.DisabledValues or {};
             Multi = Info.Multi;
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
@@ -3172,6 +3172,10 @@ do
 
             local Count = 0;
             for Idx, Value in next, Values do
+                if table.find(DisabledValues, Value) then
+                    continue;
+                end;
+
                 local Table = {};
 
                 Count = Count + 1;
@@ -3339,13 +3343,13 @@ do
             Dropdown:BuildDropdownList();
         end;
 
-		function Dropdown:SetDisabledValues(NewValues)
-			if NewValues then
-				Dropdown.DisabledValues = NewValues;
-			end;
+        function Dropdown:SetDisabledValues(NewValues)
+            if NewValues then
+                Dropdown.DisabledValues = NewValues;
+            end;
 
-			Dropdown:BuildDropdownList();
-		end
+            Dropdown:BuildDropdownList();
+        end
 
         function Dropdown:SetVisible(Visibility)
             Dropdown.Visible = Visibility;

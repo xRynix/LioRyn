@@ -1,6 +1,6 @@
 local cloneref = (cloneref or clonereference or function(instance: any) return instance end)
 local httpService = cloneref(game:GetService('HttpService'))
-local httprequest = (syn and syn.request) or (http and http.request) or request
+local httprequest = (syn and syn.request) or request or http_request or (http and http.request)
 local getassetfunc = getcustomasset or getsynasset
 local isfolder, isfile, listfiles = isfolder, isfile, listfiles;
 
@@ -52,27 +52,35 @@ local ThemeManager = {} do
 
 	function ApplyBackgroundVideo(videoLink)
 		if
-			not (videoLink and getassetfunc and writefile and readfile and isfile) or
+			typeof(videoLink) ~= "string" or
+			not (getassetfunc and writefile and readfile and isfile) or
 			not (ThemeManager.Library and ThemeManager.Library.InnerVideoBackground)
-		then
-			return;
-		end;
+		then return; end;
 
-		videoLink = tostring(videoLink)
-		if string.sub(videoLink, -5) ~= ".webm" then return end
+		--// Variables \\--
+		local videoInstance = ThemeManager.Library.InnerVideoBackground;
+		local extension = videoLink:match(".*/(.-)?") or videoLink:match(".*/(.-)$");
+		local filename = string.sub(extension, 0, -6);
+		local _, domain = videoLink:match("^(https?://)([^/]+)"); -- _ is protocol
 
-		--// Data \\--
-		local videoFile, linkFile = ThemeManager.Folder .. '/themes/video.webm', ThemeManager.Folder .. '/themes/videolink.txt';
-		local savedVideoLink = (isfile(linkFile) and readfile(linkFile));
-		local videoInstance = ThemeManager.Library.InnerVideoBackground
+		--// Check URL \\--
+		domain = tostring(domain);
+		extension = tostring(extension);
+		if videoLink == "" then
+			videoInstance:Pause();
+			videoInstance.Video = "";
+			videoInstance.Visible = false;
+			return
+		end
+		if #extension > 5 and string.sub(extension, -5) ~= ".webm" then return; end;
 
 		--// Fetch Video Data \\--
-		if savedVideoLink ~= videoLink then
+		local videoFile = ThemeManager.Folder .. "/themes/" .. string.gsub(domain .. filename, 0, 249) .. ".webm";
+		if not isfile(videoFile) then
 			local success, requestRes = pcall(httprequest, { Url = videoLink, Method = 'GET' })
-			if not success then return end;
+			if not (success and typeof(requestRes) == "table" and typeof(requestRes.Body) == "string") then return; end;
 
-			writefile(videoFile, requestRes)
-			writefile(linkFile, videoLink)
+			writefile(videoFile, requestRes.Body)
 		end
 
 		--// Play Video \\--

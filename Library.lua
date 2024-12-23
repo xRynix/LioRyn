@@ -3161,7 +3161,7 @@ do
 
         function Dropdown:BuildDropdownList()
             local Values = Dropdown.Values;
-			local DisabledValues = Dropdown.DisabledValues;
+            local DisabledValues = Dropdown.DisabledValues;
             local Buttons = {};
 
             for _, Element in next, Scrolling:GetChildren() do
@@ -3275,7 +3275,7 @@ do
                 Buttons[Button] = Table;
             end;
 
-	        for Idx, Value in next, DisabledValues do
+            for Idx, Value in next, DisabledValues do
                 local Table = {};
 
                 Count = Count + 1;
@@ -3313,15 +3313,15 @@ do
                     { BorderColor3 = 'OutlineColor', ZIndex = 23 }
                 );
 
-				function Table:UpdateButton()
+                function Table:UpdateButton()
                     ButtonLabel.TextColor3 = Library.DisabledAccentColor;
                     Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Library.DisabledAccentColor;
                 end;
 
-				Table:UpdateButton();
+                Table:UpdateButton();
                 Dropdown:Display();
 
-				Buttons[Button] = Table;
+                Buttons[Button] = Table;
             end;
 
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * 20) + 1);

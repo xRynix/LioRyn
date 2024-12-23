@@ -59,13 +59,11 @@ local ThemeManager = {} do
 
 		--// Variables \\--
 		local videoInstance = ThemeManager.Library.InnerVideoBackground;
-		local extension = videoLink:match(".*/(.-)?") or videoLink:match(".*/(.-)$");
+		local extension = videoLink:match(".*/(.-)?") or videoLink:match(".*/(.-)$"); extension = tostring(extension);
 		local filename = string.sub(extension, 0, -6);
-		local _, domain = videoLink:match("^(https?://)([^/]+)"); -- _ is protocol
+		local _, domain = videoLink:match("^(https?://)([^/]+)"); domain = tostring(domain); -- _ is protocol
 
 		--// Check URL \\--
-		domain = tostring(domain);
-		extension = tostring(extension);
 		if videoLink == "" then
 			videoInstance:Pause();
 			videoInstance.Video = "";

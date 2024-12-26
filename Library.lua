@@ -4821,7 +4821,8 @@ function Library:CreateWindow(...)
     local Toggled = false;
     local Fading = false;
     
-    function Library:Toggle()
+    function Library:Toggle(Toggling)
+        if Toggling == Toggled then return end;
         if Fading then return end;
 
         local FadeTime = Config.MenuFadeTime;

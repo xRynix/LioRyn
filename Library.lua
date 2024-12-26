@@ -4822,7 +4822,7 @@ function Library:CreateWindow(...)
     local Fading = false;
     
     function Library:Toggle(Toggling)
-        if Toggling == Toggled then return end;
+        if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
         local FadeTime = Config.MenuFadeTime;

@@ -483,6 +483,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
 
     local function UpdateText(Text)
         if Text == nil then return end
+
         local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
 
         Label.Text = Text;
@@ -498,14 +499,14 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
         end
 
         if not TooltipTable.Disabled then
-            if InfoStr == nil then
+            if InfoStr == nil or InfoStr == "" then
                 Tooltip.Visible = false
                 return
             end
 
             if Label.Text ~= InfoStr then UpdateText(InfoStr); end
         else
-            if DisabledInfoStr == nil then
+            if DisabledInfoStr == nil or DisabledInfoStr == "" then
                 Tooltip.Visible = false
                 return
             end

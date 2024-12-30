@@ -7,4 +7,5 @@
 + Enabled RichText for labels
 + Fixed 'Team' type (Dropdowns) not being updated
 + Fixed 'AddTooltip' typo to 'AddToolTip'
++ OnChanged now uses SafeCallback
 ```

@@ -1200,7 +1200,8 @@ do
 
         function ColorPicker:OnChanged(Func)
             ColorPicker.Changed = Func;
-            Func(ColorPicker.Value)
+            
+            Library:SafeCallback(Func, ColorPicker.Value);
         end;
 
         if ParentObj.Addons then
@@ -2336,7 +2337,7 @@ do
                 return;
             end;
 
-            Func(Textbox.Value);
+            Library:SafeCallback(Func, Textbox.Value);
         end;
 
         function Textbox:UpdateColors()
@@ -2367,8 +2368,10 @@ do
             Textbox.Value = Text;
             Box.Text = Text;
 
-            Library:SafeCallback(Textbox.Callback, Textbox.Value);
-            Library:SafeCallback(Textbox.Changed, Textbox.Value);
+            if not Textbox.Disabled then
+                Library:SafeCallback(Textbox.Callback, Textbox.Value);
+                Library:SafeCallback(Textbox.Changed, Textbox.Value);
+            end;
         end;
 
         function Textbox:SetVisible(Visibility)
@@ -2577,11 +2580,11 @@ do
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func;
 
-            if Toggle.Disabled then 
+            if Toggle.Disabled then
                 return;
             end;
 
-            Func(Toggle.Value);
+            Library:SafeCallback(Func, Toggle.Value);
         end;
 
         function Toggle:SetValue(Bool)
@@ -2601,8 +2604,11 @@ do
                 end
             end
 
-            Library:SafeCallback(Toggle.Callback, Toggle.Value);
-            Library:SafeCallback(Toggle.Changed, Toggle.Value);
+            if not Toggle.Disabled then
+                Library:SafeCallback(Toggle.Callback, Toggle.Value);
+                Library:SafeCallback(Toggle.Changed, Toggle.Value);
+            end;
+
             Library:UpdateDependencyBoxes();
         end;
 
@@ -2828,12 +2834,13 @@ do
         end;
 
         function Slider:OnChanged(Func)
+            Slider.Changed = Func;
+
             if Slider.Disabled then
                 return;
             end;
-
-            Slider.Changed = Func;
-            Func(Slider.Value);
+            
+            Library:SafeCallback(Func, Slider.Value);
         end;
 
         local function Round(Value)
@@ -2880,8 +2887,10 @@ do
             Slider.Value = Num;
             Slider:Display();
 
-            Library:SafeCallback(Slider.Callback, Slider.Value);
-            Library:SafeCallback(Slider.Changed, Slider.Value);
+            if not Slider.Disabled then
+                Library:SafeCallback(Slider.Callback, Slider.Value);
+                Library:SafeCallback(Slider.Changed, Slider.Value);
+            end;
         end;
 
         function Slider:SetVisible(Visibility)
@@ -3492,7 +3501,8 @@ do
             if Dropdown.Disabled then
                 return;
             end;
-            Func(Dropdown.Value);
+
+            Library:SafeCallback(Func, Dropdown.Value);
         end;
 
         function Dropdown:SetValue(Val)
@@ -3516,8 +3526,10 @@ do
 
             Dropdown:BuildDropdownList();
 
-            Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
-            Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+            if not Dropdown.Disabled then
+                Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
+                Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+            end;
         end;
 
         function Dropdown:SetText(Text)

@@ -2625,6 +2625,9 @@ do
             Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
             OriginalText = Info.Text; Text = Info.Text;
 
+            Prefix = typeof(Info.Prefix) == "string" and Info.Prefix or "";
+            Suffix = typeof(Info.Suffix) == "string" and Info.Suffix or "";
+
             Callback = Info.Callback or function(Value) end;
         };
 
@@ -2745,14 +2748,12 @@ do
         end;
         
         function Slider:Display()
-            local Suffix = Info.Suffix or '';
-
             if Info.Compact then
-                DisplayLabel.Text = Slider.Text .. ': ' .. Slider.Value .. Suffix
+                DisplayLabel.Text = Slider.Text .. ': ' .. Slider.Prefix .. Slider.Value .. Slider.Suffix;
             elseif Info.HideMax then
-                DisplayLabel.Text = string.format('%s', Slider.Value .. Suffix)
+                DisplayLabel.Text = string.format('%s', Slider.Prefix .. Slider.Value .. Slider.Suffix);
             else
-                DisplayLabel.Text = string.format('%s/%s', Slider.Value .. Suffix, Slider.Max .. Suffix);
+                DisplayLabel.Text = string.format('%s/%s', Slider.Prefix .. Slider.Value .. Slider.Suffix, Slider.Prefix .. Slider.Max .. Slider.Suffix);
             end
 
             local X = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
@@ -2851,6 +2852,20 @@ do
             end
         end;
 
+        function Slider:SetPrefix(Prefix)
+            if typeof(Prefix) == "string" then
+                Slider.Prefix = Prefix;
+                Slider:Display();
+            end
+        end;
+
+        function Slider:SetSuffix(Suffix)
+            if typeof(Suffix) == "string" then
+                Slider.Suffix = Suffix;
+                Slider:Display();
+            end
+        end;
+
         SliderInner.InputBegan:Connect(function(Input)
             if Slider.Disabled then
                 return;
@@ -2935,6 +2950,8 @@ do
         assert(Info.Values, 'AddDropdown: Missing dropdown value list.');
         assert(Info.AllowNull or Info.Default, 'AddDropdown: Missing default value. Pass `AllowNull` as true if this was intentional.')
 
+        Info.Searchable = typeof(Info.Searchable) == "boolean" and Info.Searchable or false;
+
         if (not Info.Text) then
             Info.Compact = true;
         end;
@@ -3018,6 +3035,38 @@ do
             Rotation = 90;
             Parent = DropdownInner;
         });
+
+        local DropdownInnerSearch;
+        if Info.Searchable then
+            DropdownInnerSearch = Library:Create('TextBox', {
+                BackgroundTransparency = 1;
+                Visible = false;
+
+                Position = UDim2.new(0, 5, 0, 0);
+                Size = UDim2.new(0.9, -5, 1, 0);
+
+                Font = Library.Font;
+                PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
+                PlaceholderText = 'Search...';
+
+                Text = '';
+                TextColor3 = Library.FontColor;
+                TextSize = 14;
+                TextStrokeTransparency = 0;
+                TextXAlignment = Enum.TextXAlignment.Left;
+
+                ClearTextOnFocus = false;
+
+                ZIndex = 7;
+                Parent = DropdownOuter;
+            });
+
+            Library:ApplyTextStroke(DropdownInnerSearch);
+
+            Library:AddToRegistry(DropdownInnerSearch, {
+                TextColor3 = 'FontColor';
+            });
+        end
 
         local DropdownArrow = Library:Create('ImageLabel', {
             AnchorPoint = Vector2.new(0, 0.5);
@@ -3177,6 +3226,10 @@ do
                     continue;
                 end;
 
+                if Info.Searchable and not string.lower(Value):match(string.lower(DropdownInnerSearch.Text)) then
+                    continue;
+                end
+
                 local Table = {};
 
                 Count = Count + 1;
@@ -3277,6 +3330,10 @@ do
             end;
 
             for Idx, Value in next, DisabledValues do
+                if Info.Searchable and not string.lower(Value):match(string.lower(DropdownInnerSearch.Text)) then
+                    continue;
+                end
+
                 local Table = {};
 
                 Count = Count + 1;
@@ -3388,6 +3445,12 @@ do
                 Library.CanDrag = false;
             end;
 
+            if Info.Searchable then
+                ItemList.Visible = false;
+                DropdownInnerSearch.Text = "";
+                DropdownInnerSearch.Visible = true;
+            end
+
             ListOuter.Visible = true;
             Library.OpenedFrames[ListOuter] = true;
             DropdownArrow.Rotation = 180;
@@ -3399,6 +3462,12 @@ do
             if Library.IsMobile then            
                 Library.CanDrag = true;
             end;
+
+            if Info.Searchable then
+                DropdownInnerSearch.Text = "";
+                DropdownInnerSearch.Visible = false;
+                ItemList.Visible = true;
+            end
 
             ListOuter.Visible = false;
             Library.OpenedFrames[ListOuter] = nil;
@@ -3449,7 +3518,7 @@ do
             end
         end;
 
-        DropdownOuter.InputBegan:Connect(function(Input)
+        local function ToggleUsingInput(Input)
             if Dropdown.Disabled then
                 return;
             end;
@@ -3461,7 +3530,18 @@ do
                     Dropdown:OpenDropdown();
                 end;
             end;
-        end);
+        end
+
+        if Info.Searchable then
+            DropdownInner.InputBegan:Connect(ToggleUsingInput);
+            DropdownArrow.InputBegan:Connect(ToggleUsingInput);
+
+            DropdownInnerSearch:GetPropertyChangedSignal("Text"):Connect(function()
+                Dropdown:BuildDropdownList()
+            end)
+        else
+            DropdownOuter.InputBegan:Connect(ToggleUsingInput);
+        end
 
         InputService.InputBegan:Connect(function(Input)
             if Dropdown.Disabled then

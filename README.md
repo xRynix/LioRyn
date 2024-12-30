@@ -1,5 +1,6 @@
 > [!IMPORTANT]  
 > This is a maintained fork of LinoriaLib. This is not the original LinoriaLib repository.
+> Changelogs: [Changelogs](CHANGELOGS.MD)
 
 # LinoriaLib
 A Roblox UI library inspired by Splix, BBot and many others.

@@ -294,6 +294,8 @@ LeftGroupBox:AddDropdown('MyDropdown', {
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
 	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
 
+	Searchable = true, -- true / false, makes the dropdown searchable (great for a long list of values)
+
 	Callback = function(Value)
 		print('[cb] Dropdown got changed. New value:', Value)
 	end,

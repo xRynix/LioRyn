@@ -1957,6 +1957,7 @@ do
                 Text = Button.Text;
                 ZIndex = 6;
                 Parent = Inner;
+                RichText = true;
             });
 
             Library:Create('UIGradient', {
@@ -2063,7 +2064,7 @@ do
                 Text = select(1, ...),
                 Func = select(2, ...)
             }
-    
+
             assert(typeof(SubButton.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
             self.Outer.Size = UDim2.new(0.5, -2, 0, 20)
@@ -2078,7 +2079,7 @@ do
                 SubButton.Label.TextColor3 = SubButton.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
             end;
 
-            function SubButton:AddTooltip(tooltip, disabledTooltip)
+            function SubButton:AddToolTip(tooltip, disabledTooltip)
                 if typeof(tooltip) == "string" or typeof(disabledTooltip) == "string" then
                     if SubButton.TooltipTable then
                         SubButton.TooltipTable:Destroy()
@@ -2097,12 +2098,19 @@ do
                 if SubButton.TooltipTable then
                     SubButton.TooltipTable.Disabled = Disabled;
                 end
-    
+
                 SubButton:UpdateColors();
             end;
 
+            function SubButton:SetText(Text)
+                if typeof(Text) == "string" then
+                    SubButton.Text = Text;
+                    SubButton.Label.Text = SubButton.Text;
+                end
+            end;
+
             if typeof(SubButton.Tooltip) == "string" or typeof(SubButton.DisabledTooltip) == "string" then
-                SubButton.TooltipTable = SubButton:AddTooltip(SubButton.Tooltip, SubButton.DisabledTooltip, SubButton.Outer)
+                SubButton.TooltipTable = SubButton:AddToolTip(SubButton.Tooltip, SubButton.DisabledTooltip, SubButton.Outer)
                 SubButton.TooltipTable.Disabled = SubButton.Disabled;
             end
 
@@ -2117,7 +2125,7 @@ do
             Button.Label.TextColor3 = Button.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
         end;
 
-        function Button:AddTooltip(tooltip, disabledTooltip)
+        function Button:AddToolTip(tooltip, disabledTooltip)
             if typeof(tooltip) == "string" or typeof(disabledTooltip) == "string" then
                 if Button.TooltipTable then
                     Button.TooltipTable:Destroy()
@@ -2131,7 +2139,7 @@ do
         end;
 
         if typeof(Button.Tooltip) == "string" or typeof(Button.DisabledTooltip) == "string" then
-            Button.TooltipTable = Button:AddTooltip(Button.Tooltip, Button.DisabledTooltip, Button.Outer)
+            Button.TooltipTable = Button:AddToolTip(Button.Tooltip, Button.DisabledTooltip, Button.Outer)
             Button.TooltipTable.Disabled = Button.Disabled;
         end
 
@@ -2208,19 +2216,25 @@ do
         Groupbox:Resize();
     end
 
-    function Funcs:AddInput(Idx, Info) -- TO-DO: missing Visible, Disabled
+    function Funcs:AddInput(Idx, Info)
         assert(Info.Text, 'AddInput: Missing `Text` string.')
+
+        Info.ClearTextOnFocus = typeof(Info.ClearTextOnFocus) == "boolean" and Info.ClearTextOnFocus or true;
 
         local Textbox = {
             Value = Info.Default or '';
             Numeric = Info.Numeric or false;
             Finished = Info.Finished or false;
+            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
+            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
             Type = 'Input';
+
             Callback = Info.Callback or function(Value) end;
         };
 
         local Groupbox = self;
         local Container = Groupbox.Container;
+        local Blank;
 
         local InputLabel = Library:CreateLabel({
             Size = UDim2.new(1, 0, 0, 15);
@@ -2260,8 +2274,10 @@ do
             { BorderColor3 = 'Black' }
         );
 
-        if typeof(Info.Tooltip) == "string" then
-            Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, TextBoxOuter)
+        local TooltipTable;
+        if typeof(Info.Tooltip) == "string" or typeof(Info.DisabledTooltip) == "string" then
+            TooltipTable = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, TextBoxOuter)
+            TooltipTable.Disabled = Textbox.Disabled;
         end
 
         Library:Create('UIGradient', {
@@ -2300,13 +2316,42 @@ do
             TextStrokeTransparency = 0;
             TextXAlignment = Enum.TextXAlignment.Left;
 
-            ClearTextOnFocus = (typeof(Info.ClearTextOnFocus) ~= "boolean" and true or Info.ClearTextOnFocus);
+            TextEditable = not Textbox.Disabled;
+            ClearTextOnFocus = not Textbox.Disabled and Info.ClearTextOnFocus;
 
             ZIndex = 7;
             Parent = Container;
         });
 
         Library:ApplyTextStroke(Box);
+
+        Library:AddToRegistry(Box, {
+            TextColor3 = 'FontColor';
+        });
+
+        function Textbox:OnChanged(Func)
+            Textbox.Changed = Func;
+
+            if Textbox.Disabled then
+                return;
+            end;
+
+            Func(Textbox.Value);
+        end;
+
+        function Textbox:UpdateColors()
+            Box.TextColor3 = Textbox.Disabled and Library.DisabledAccentColor or Library.FontColor;
+
+            Library.RegistryMap[Box].Properties.TextColor3 = Textbox.Disabled and 'DisabledAccentColor' or 'FontColor';
+        end;
+
+        function Textbox:Display()
+            TextBoxOuter.Visible = Textbox.Visible;
+            InputLabel.Visible = Textbox.Visible;
+            if Blank then Blank.Visible = Textbox.Visible; end
+
+            Groupbox:Resize();
+        end;
 
         function Textbox:SetValue(Text)
             if Info.MaxLength and #Text > Info.MaxLength then
@@ -2324,6 +2369,25 @@ do
 
             Library:SafeCallback(Textbox.Callback, Textbox.Value);
             Library:SafeCallback(Textbox.Changed, Textbox.Value);
+        end;
+
+        function Textbox:SetVisible(Visibility)
+            Textbox.Visible = Visibility;
+
+            Textbox:Display();
+        end;
+
+        function Textbox:SetDisabled(Disabled)
+            Textbox.Disabled = Disabled;
+
+            Box.TextEditable = not Disabled;
+            Box.ClearTextOnFocus = not Disabled and Info.ClearTextOnFocus;
+
+            if TooltipTable then
+                TooltipTable.Disabled = Disabled;
+            end
+
+            Textbox:UpdateColors();
         end;
 
         if Textbox.Finished then
@@ -2378,16 +2442,9 @@ do
         Box.FocusLost:Connect(Update)
         Box.Focused:Connect(Update)
 
-        Library:AddToRegistry(Box, {
-            TextColor3 = 'FontColor';
-        });
-
-        function Textbox:OnChanged(Func)
-            Textbox.Changed = Func;
-            Func(Textbox.Value);
-        end;
-
-        Groupbox:AddBlank(5);
+        Blank = Groupbox:AddBlank(5, Textbox.Visible);
+        task.delay(0.1, Textbox.UpdateColors, Textbox);
+        Textbox:Display();
         Groupbox:Resize();
 
         Options[Idx] = Textbox;
@@ -2401,8 +2458,8 @@ do
         local Toggle = {
             Value = Info.Default or false;
             Type = 'Toggle';
-            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
-            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
+            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
+            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
             Risky = typeof(Info.Risky) ~= "boolean" and false or Info.Risky;
             OriginalText = Info.Text; Text = Info.Text;
 
@@ -2450,6 +2507,7 @@ do
             TextXAlignment = Enum.TextXAlignment.Left;
             ZIndex = 6;
             Parent = ToggleInner;
+            RichText = true;
         });
 
         Library:Create('UIListLayout', {
@@ -2519,7 +2577,10 @@ do
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func;
 
-            if Toggle.Disabled then return end;
+            if Toggle.Disabled then 
+                return;
+            end;
+
             Func(Toggle.Value);
         end;
 
@@ -2580,6 +2641,7 @@ do
                 for _, Addon in next, Toggle.Addons do
                     if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end
                 end
+
                 Toggle:SetValue(not Toggle.Value) -- Why was it not like this from the start?
                 Library:AttemptSave();
             end;
@@ -2621,8 +2683,8 @@ do
             Rounding = Info.Rounding;
             MaxSize = 232;
             Type = 'Slider';
-            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
-            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
+            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
+            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
             OriginalText = Info.Text; Text = Info.Text;
 
             Prefix = typeof(Info.Prefix) == "string" and Info.Prefix or "";
@@ -2647,6 +2709,7 @@ do
                 Visible = Slider.Visible;
                 ZIndex = 5;
                 Parent = Container;
+                RichText = true;
             });
 
             table.insert(Blanks, Groupbox:AddBlank(3, Slider.Visible));
@@ -2715,6 +2778,7 @@ do
             Text = 'Infinite';
             ZIndex = 9;
             Parent = SliderInner;
+            RichText = true;
         });
 
         Library:OnHighlight(SliderOuter, SliderOuter,
@@ -2963,8 +3027,8 @@ do
             Multi = Info.Multi;
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
-            Visible = typeof(Info.Visible) ~= "boolean" and true or Info.Visible;
-            Disabled = typeof(Info.Disabled) ~= "boolean" and false or Info.Disabled;
+            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
+            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
             Callback = Info.Callback or function(Value) end;
 
             OriginalText = Info.Text; Text = Info.Text;
@@ -2989,6 +3053,7 @@ do
                 Visible = Dropdown.Visible;
                 ZIndex = 5;
                 Parent = Container;
+                RichText = true;
             });
 
             CompactBlank = Groupbox:AddBlank(3, Dropdown.Visible);
@@ -3087,6 +3152,7 @@ do
             TextWrapped = true;
             ZIndex = 7;
             Parent = DropdownInner;
+            RichText = true;
         });
 
         Library:OnHighlight(DropdownOuter, DropdownOuter,
@@ -3222,14 +3288,11 @@ do
 
             local Count = 0;
             for Idx, Value in next, Values do
-                if table.find(DisabledValues, Value) then
-                    continue;
-                end;
-
                 if Info.Searchable and not string.lower(Value):match(string.lower(DropdownInnerSearch.Text)) then
                     continue;
                 end
 
+                local IsDisabled = table.find(DisabledValues, Value);
                 local Table = {};
 
                 Count = Count + 1;
@@ -3262,7 +3325,7 @@ do
                 });
 
                 Library:OnHighlight(Button, Button,
-                    { BorderColor3 = 'AccentColor', ZIndex = 24 },
+                    { BorderColor3 = IsDisabled and 'DisabledAccentColor' or 'AccentColor', ZIndex = 24 },
                     { BorderColor3 = 'OutlineColor', ZIndex = 23 }
                 );
 
@@ -3281,100 +3344,49 @@ do
                         Selected = Dropdown.Value == Value;
                     end;
 
-                    ButtonLabel.TextColor3 = Selected and Library.AccentColor or Library.FontColor;
-                    Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or 'FontColor';
+                    ButtonLabel.TextColor3 = Selected and Library.AccentColor or (IsDisabled and Library.DisabledAccentColor or Library.FontColor);
+                    Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or (IsDisabled and 'DisabledAccentColor' or 'FontColor');
                 end;
 
-                Button.MouseButton1Click:Connect(function(Input)
-                    local Try = not Selected;
+                if not IsDisabled then
+                    Button.MouseButton1Click:Connect(function(Input)
+                        local Try = not Selected;
 
-                    if Dropdown:GetActiveValues() == 1 and (not Try) and (not Info.AllowNull) then
-                    else
-                        if Info.Multi then
-                            Selected = Try;
-
-                            if Selected then
-                                Dropdown.Value[Value] = true;
-                            else
-                                Dropdown.Value[Value] = nil;
-                            end;
+                        if Dropdown:GetActiveValues() == 1 and (not Try) and (not Info.AllowNull) then
                         else
-                            Selected = Try;
+                            if Info.Multi then
+                                Selected = Try;
 
-                            if Selected then
-                                Dropdown.Value = Value;
+                                if Selected then
+                                    Dropdown.Value[Value] = true;
+                                else
+                                    Dropdown.Value[Value] = nil;
+                                end;
                             else
-                                Dropdown.Value = nil;
+                                Selected = Try;
+
+                                if Selected then
+                                    Dropdown.Value = Value;
+                                else
+                                    Dropdown.Value = nil;
+                                end;
+
+                                for _, OtherButton in next, Buttons do
+                                    OtherButton:UpdateButton();
+                                end;
                             end;
 
-                            for _, OtherButton in next, Buttons do
-                                OtherButton:UpdateButton();
-                            end;
+                            Table:UpdateButton();
+                            Dropdown:Display();
+                            
+                            Library:UpdateDependencyBoxes();
+                            Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
+                            Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+
+                            Library:AttemptSave();
                         end;
-
-                        Table:UpdateButton();
-                        Dropdown:Display();
-                        
-                        Library:UpdateDependencyBoxes();
-                        Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
-                        Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
-
-                        Library:AttemptSave();
-                    end;
-                end);
-
-                Table:UpdateButton();
-                Dropdown:Display();
-
-                Buttons[Button] = Table;
-            end;
-
-            for Idx, Value in next, DisabledValues do
-                if Info.Searchable and not string.lower(Value):match(string.lower(DropdownInnerSearch.Text)) then
-                    continue;
+                    end);
                 end
-
-                local Table = {};
-
-                Count = Count + 1;
-
-                local Button = Library:Create('TextButton', {
-                    AutoButtonColor = false,
-                    BackgroundColor3 = Library.MainColor;
-                    BorderColor3 = Library.OutlineColor;
-                    BorderMode = Enum.BorderMode.Middle;
-                    Size = UDim2.new(1, -1, 0, 20);
-                    Text = '';
-                    ZIndex = 23;
-                    Parent = Scrolling;
-                });
-
-                Library:AddToRegistry(Button, {
-                    BackgroundColor3 = 'MainColor';
-                    BorderColor3 = 'OutlineColor';
-                });
-
-                local ButtonLabel = Library:CreateLabel({
-                    Active = false;
-                    Size = UDim2.new(1, -6, 1, 0);
-                    Position = UDim2.new(0, 6, 0, 0);
-                    TextSize = 14;
-                    Text = Value;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    TextColor3 = Library.DisabledAccentColor;
-                    ZIndex = 25;
-                    Parent = Button;
-                });
-
-                Library:OnHighlight(Button, Button,
-                    { BorderColor3 = 'DisabledAccentColor', ZIndex = 24 },
-                    { BorderColor3 = 'OutlineColor', ZIndex = 23 }
-                );
-
-                function Table:UpdateButton()
-                    ButtonLabel.TextColor3 = Library.DisabledAccentColor;
-                    Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Library.DisabledAccentColor;
-                end;
 
                 Table:UpdateButton();
                 Dropdown:Display();
@@ -3454,7 +3466,7 @@ do
             ListOuter.Visible = true;
             Library.OpenedFrames[ListOuter] = true;
             DropdownArrow.Rotation = 180;
-            
+
             RecalculateListSize();
         end;
 
@@ -3609,7 +3621,7 @@ do
         local Depbox = {
             Dependencies = {};
         };
-        
+
         local Groupbox = self;
         local Container = Groupbox.Container;
 
@@ -4125,7 +4137,7 @@ function Library:CreateWindow(...)
         -- Config.AnchorPoint = Vector2.new(0.5, 0.5)
         Config.Position = UDim2.new(0.5, -Config.Size.X.Offset/2, 0.5, -Config.Size.Y.Offset/2)
     end
-    
+
     local Window = {
         Tabs = {};
 
@@ -4752,6 +4764,7 @@ function Library:CreateWindow(...)
                     TextXAlignment = Enum.TextXAlignment.Center;
                     ZIndex = 7;
                     Parent = Button;
+                    RichText = true;
                 });
 
                 local Block = Library:Create('Frame', {
@@ -5168,10 +5181,17 @@ end;
 
 local function OnPlayerChange()
     local PlayerList = GetPlayersString();
+    local TeamList = GetTeamsString();
 
     for _, Value in next, Options do
-        if Value.Type == 'Dropdown' and Value.SpecialType == 'Player' then
+        if not (Value.SetValues and Value.Type == 'Dropdown') then
+            continue;
+        end;
+
+        if Value.SpecialType == 'Player' then
             Value:SetValues(PlayerList);
+        elseif Value.SpecialType == 'Team' then
+            Value:SetValues(TeamList);
         end;
     end;
 end;

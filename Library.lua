@@ -4142,15 +4142,13 @@ function Library:CreateWindow(...)
     if typeof(Config.ShowCustomCursor) ~= 'boolean' then Library.ShowCustomCursor = true else Library.ShowCustomCursor = Config.ShowCustomCursor end
 
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
-    if typeof(Config.Size) ~= 'UDim2' then 
-        Config.Size = UDim2.fromOffset(550, 600)
+    if typeof(Config.Size) ~= 'UDim2' then
         if Library.IsMobile then
             local ViewportSizeYOffset = tonumber(workspace.CurrentCamera.ViewportSize.Y) - 35;
-            if ViewportSizeYOffset >= 200 and ViewportSizeYOffset <= 600 then
-                Config.Size = UDim2.fromOffset(550, ViewportSizeYOffset)
-            else
-                Config.Size = UDim2.fromOffset(550, 350)
-            end
+
+            Config.Size = UDim2.fromOffset(550, (ViewportSizeYOffset >= 200 and ViewportSizeYOffset <= 600) and ViewportSizeYOffset or 200)
+        else
+            Config.Size = UDim2.fromOffset(550, 600)
         end
     end
 

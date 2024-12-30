@@ -87,6 +87,7 @@ local Library = {
     NotifySide = "Left";
     ShowCustomCursor = true;
     ShowToggleFrameInKeybinds = true;
+    NotifyOnError = false; -- true = Library:Notify for SafeCallback (still warns in the developer console)
 
     VideoLink = "";
     TotalTabs = 0;
@@ -166,20 +167,25 @@ function Library:SafeCallback(f, ...)
         return;
     end;
 
-    if not Library.NotifyOnError then
-        return f(...);
-    end;
-
     local success, event = pcall(f, ...);
-
     if not success then
         local _, i = event:find(":%d+: ");
 
-        if not i then
-            return Library:Notify(event);
-        end;
+        if Library.NotifyOnError then
+            if not i then
+                warn(event);
+                return Library:Notify(event);
+            end;
 
-        return Library:Notify(event:sub(i + 1), 3);
+            warn(event:sub(i + 1));
+            return Library:Notify(event:sub(i + 1), 3);
+        else
+            if not i then
+                return warn(event);
+            end;
+
+            return warn(event:sub(i + 1));
+        end;
     end;
 end;
 

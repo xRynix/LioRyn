@@ -3917,6 +3917,7 @@ function Library:Notify(Text, Time, SoundId)
 end;
 
 function Library:LeftNotify(Text, Time, SoundId)
+    Text = tostring(Text);
     local XSize, YSize = Library:GetTextBounds(Text, Library.Font, 14);
 
     YSize = YSize + 7
@@ -4020,6 +4021,7 @@ function Library:LeftNotify(Text, Time, SoundId)
 end;
 
 function Library:RightNotify(Text, Time, SoundId)
+    Text = tostring(Text);
     local XSize, YSize = Library:GetTextBounds(Text, Library.Font, 14);
 
     YSize = YSize + 7

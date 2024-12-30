@@ -3171,10 +3171,11 @@ do
             TextSize = 14;
             Text = '--';
             TextXAlignment = Enum.TextXAlignment.Left;
-            TextWrapped = true;
+            TextWrapped = false;
+            TextTruncate = Enum.TextTruncate.AtEnd;
+            RichText = true;
             ZIndex = 7;
             Parent = DropdownInner;
-            RichText = true;
         });
 
         Library:OnHighlight(DropdownOuter, DropdownOuter,

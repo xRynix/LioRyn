@@ -4,7 +4,7 @@
 + Added Searchable Dropdowns
 + Added SubButton:SetText
 + Added Visible, Disabled, SetVisible and SetDisabled to Inputs
-+ Added ExcludeLocalPlayer for Dropdowns (Playe type)
++ Added ExcludeLocalPlayer for Dropdowns (Player type)
 + Enabled RichText for labels
 + Fixed 'Team' type (Dropdowns) not being updated
 + Fixed 'AddTooltip' typo to 'AddToolTip'

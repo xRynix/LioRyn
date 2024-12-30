@@ -344,6 +344,7 @@ Options.MyMultiDropdown:SetValue({
 
 LeftGroupBox:AddDropdown('MyPlayerDropdown', {
 	SpecialType = 'Player',
+	ExcludeLocalPlayer = true, -- true / false, excludes the localplayer from the Player type
 	Text = 'A player dropdown',
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
 

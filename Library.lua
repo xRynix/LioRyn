@@ -133,10 +133,14 @@ local function GetTableSize(t)
     return n   
 end;
 
-local function GetPlayersString()
+local function GetPlayersString(ExcludeLocalPlayer)
     local PlayerList = Players:GetPlayers();
 
     for i = 1, #PlayerList do
+        if ExcludeLocalPlayer == true and PlayerList[i] == Players.LocalPlayer then 
+            continue; 
+        end;
+
         PlayerList[i] = PlayerList[i].Name;
     end;
 
@@ -3013,7 +3017,9 @@ do
 
     function Funcs:AddDropdown(Idx, Info)
         if Info.SpecialType == 'Player' then
-            Info.Values = GetPlayersString();
+            Info.ExcludeLocalPlayer = typeof(Info.ExcludeLocalPlayer) == "boolean" and Info.ExcludeLocalPlayer or false;
+
+            Info.Values = GetPlayersString(Info.ExcludeLocalPlayer);
             Info.AllowNull = true;
         elseif Info.SpecialType == 'Team' then
             Info.Values = GetTeamsString();
@@ -3041,6 +3047,7 @@ do
             Callback = Info.Callback or function(Value) end;
 
             OriginalText = Info.Text; Text = Info.Text;
+            ExcludeLocalPlayer = Info.ExcludeLocalPlayer;
         };
 
         local DropdownLabel;
@@ -5192,17 +5199,20 @@ function Library:CreateWindow(...)
 end;
 
 local function OnPlayerChange()
-    local PlayerList = GetPlayersString();
+    local PlayerList, ExcludedPlayerList = GetPlayersString(), GetPlayersString(true);
+
+    for _, Value in next, Options do
+        if Value.SetValues and Value.Type == 'Dropdown' and Value.SpecialType == 'Player' then
+            Value:SetValues(Value.ExcludeLocalPlayer and ExcludedPlayerList or PlayerList);
+        end;
+    end;
+end;
+
+local function OnTeamChange()
     local TeamList = GetTeamsString();
 
     for _, Value in next, Options do
-        if not (Value.SetValues and Value.Type == 'Dropdown') then
-            continue;
-        end;
-
-        if Value.SpecialType == 'Player' then
-            Value:SetValues(PlayerList);
-        elseif Value.SpecialType == 'Team' then
+        if Value.SetValues and Value.Type == 'Dropdown' and Value.SpecialType == 'Team' then
             Value:SetValues(TeamList);
         end;
     end;
@@ -5210,6 +5220,9 @@ end;
 
 Library:GiveSignal(Players.PlayerAdded:Connect(OnPlayerChange));
 Library:GiveSignal(Players.PlayerRemoving:Connect(OnPlayerChange));
+
+Library:GiveSignal(Teams.ChildAdded:Connect(OnTeamChange));
+Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange));
 
 getgenv().Library = Library
 return Library

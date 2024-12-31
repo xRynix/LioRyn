@@ -103,7 +103,7 @@ pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- F
 Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
 
 if Library.IsMobile then
-    Library.MinSize = Vector2.new(550, 200); -- Make UI little bit smaller.
+    Library.MinSize = Vector2.new(550, 200);
 end
 
 local RainbowStep = 0
@@ -139,7 +139,7 @@ local function GetPlayersString(ExcludeLocalPlayer)
 
     if ExcludeLocalPlayer == true then
         local idx = table.find(PlayerList, Players.LocalPlayer);
-        
+
         if idx then
             table.remove(PlayerList, idx);
         end;
@@ -4153,7 +4153,7 @@ function Library:CreateWindow(...)
         if Library.IsMobile then
             local ViewportSizeYOffset = tonumber(workspace.CurrentCamera.ViewportSize.Y) - 35;
 
-            Config.Size = UDim2.fromOffset(550, (ViewportSizeYOffset >= 200 and ViewportSizeYOffset <= 600) and ViewportSizeYOffset or 200)
+            Config.Size = UDim2.fromOffset(550, math.clamp(ViewportSizeYOffset, 200, 600))
         else
             Config.Size = UDim2.fromOffset(550, 600)
         end

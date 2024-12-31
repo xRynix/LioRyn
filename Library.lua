@@ -137,11 +137,15 @@ end;
 local function GetPlayersString(ExcludeLocalPlayer)
     local PlayerList = Players:GetPlayers();
 
-    for i = 1, #PlayerList do
-        if ExcludeLocalPlayer == true and PlayerList[i] == Players.LocalPlayer then 
-            continue; 
+    if ExcludeLocalPlayer == true then
+        local idx = table.find(PlayerList, Players.LocalPlayer);
+        
+        if idx then
+            table.remove(PlayerList, idx);
         end;
+    end;
 
+    for i = 1, #PlayerList do
         PlayerList[i] = PlayerList[i].Name;
     end;
 

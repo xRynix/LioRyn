@@ -162,41 +162,35 @@ local function GetTeamsString()
     end;
 
     table.sort(TeamList, function(str1, str2) return str1 < str2 end);
-    
+
     return TeamList;
 end;
 
+local function ThrowError(src, line, err)
+    local msg = string.format('%s:%i: %s', src, line, err);
+	task.spawn(error, msg, 0);
+    return msg;
+end;
+
 function Library:SafeCallback(f, ...)
-    if (not f) then
-        return;
-    end;
+    if (not f) then return end;
 
     local success, event = pcall(f, ...);
-    if not success then
-        local _, i = event:find(":%d+: ");
+    if success then return end;
 
-        if Library.NotifyOnError then
-            if not i then
-                warn(event);
-                return Library:Notify(event);
-            end;
+    local _, i = event:find(":%d+: ");
+    local line, src = tostring(debug.info(2, "l")), tostring(debug.info(2, "n"));
 
-            warn(event:sub(i + 1));
-            return Library:Notify(event:sub(i + 1), 3);
-        else
-            if not i then
-                return warn(event);
-            end;
+    src = src == "" and "SafeCallback" or src;
+    event = (not i) and event or event:sub(i + 1);
 
-            return warn(event:sub(i + 1));
-        end;
-    end;
+    local msg = ThrowError(src, line, event);
+    if Library.NotifyOnError then Library:Notify(msg) end;
 end;
 
 function Library:AttemptSave()
-    if Library.SaveManager then
-        Library.SaveManager:Save();
-    end;
+    if (not Library.SaveManager) then return end;
+    Library.SaveManager:Save();
 end;
 
 function Library:Create(Class, Properties)

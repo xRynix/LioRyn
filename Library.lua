@@ -1838,7 +1838,7 @@ do
         return Library:Create('Frame', {
             BackgroundTransparency = 1;
             Size = UDim2.new(1, 0, 0, Size);
-            Visible = typeof(Visible) ~= "boolean" and true or Visible;
+            Visible = if typeof(Visible) == "boolean" then Visible else true;
             ZIndex = 1;
             Parent = Container;
         });
@@ -1940,7 +1940,7 @@ do
         local Blank = nil;
         local Groupbox = self;
         local Container = Groupbox.Container;
-        local IsVisible = typeof(Button.Visible) ~= "boolean" and true or Button.Visible;
+        local IsVisible = if typeof(Button.Visible) == "boolean" then Button.Visible else true;
 
         local function CreateBaseButton(Button)
             local Outer = Library:Create('Frame', {
@@ -2228,14 +2228,14 @@ do
     function Funcs:AddInput(Idx, Info)
         assert(Info.Text, 'AddInput: Missing `Text` string.')
 
-        Info.ClearTextOnFocus = typeof(Info.ClearTextOnFocus) == "boolean" and Info.ClearTextOnFocus or true;
+        Info.ClearTextOnFocus = if typeof(Info.ClearTextOnFocus) == "boolean" then Info.ClearTextOnFocus else true;
 
         local Textbox = {
             Value = Info.Default or '';
             Numeric = Info.Numeric or false;
             Finished = Info.Finished or false;
-            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
-            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
+            Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
+            Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
             Type = 'Input';
 
             Callback = Info.Callback or function(Value) end;
@@ -2469,9 +2469,9 @@ do
         local Toggle = {
             Value = Info.Default or false;
             Type = 'Toggle';
-            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
-            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
-            Risky = typeof(Info.Risky) ~= "boolean" and false or Info.Risky;
+            Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
+            Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
+            Risky = if typeof(Info.Risky) == "boolean" then Info.Risky else false;
             OriginalText = Info.Text; Text = Info.Text;
 
             Callback = Info.Callback or function(Value) end;
@@ -2697,8 +2697,8 @@ do
             Rounding = Info.Rounding;
             MaxSize = 232;
             Type = 'Slider';
-            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
-            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
+            Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
+            Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
             OriginalText = Info.Text; Text = Info.Text;
 
             Prefix = typeof(Info.Prefix) == "string" and Info.Prefix or "";
@@ -3021,7 +3021,7 @@ do
 
     function Funcs:AddDropdown(Idx, Info)
         if Info.SpecialType == 'Player' then
-            Info.ExcludeLocalPlayer = typeof(Info.ExcludeLocalPlayer) == "boolean" and Info.ExcludeLocalPlayer or false;
+            Info.ExcludeLocalPlayer = if typeof(Info.ExcludeLocalPlayer) == "boolean" then Info.ExcludeLocalPlayer else false;
 
             Info.Values = GetPlayersString(Info.ExcludeLocalPlayer);
             Info.AllowNull = true;
@@ -3033,7 +3033,7 @@ do
         assert(Info.Values, 'AddDropdown: Missing dropdown value list.');
         assert(Info.AllowNull or Info.Default, 'AddDropdown: Missing default value. Pass `AllowNull` as true if this was intentional.')
 
-        Info.Searchable = typeof(Info.Searchable) == "boolean" and Info.Searchable or false;
+        Info.Searchable = if typeof(Info.Searchable) == "boolean" then Info.Searchable else false;
 
         if (not Info.Text) then
             Info.Compact = true;
@@ -3046,8 +3046,8 @@ do
             Multi = Info.Multi;
             Type = 'Dropdown';
             SpecialType = Info.SpecialType; -- can be either 'Player' or 'Team'
-            Visible = typeof(Info.Visible) == "boolean" and Info.Visible or true;
-            Disabled = typeof(Info.Disabled) == "boolean" and Info.Disabled or false;
+            Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
+            Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
             Callback = Info.Callback or function(Value) end;
 
             OriginalText = Info.Text; Text = Info.Text;

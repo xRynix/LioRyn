@@ -426,6 +426,27 @@ DropdownGroupBox:AddDropdown('MyDisabledValueDropdown', {
     Visible = true, -- Will make the dropdown invisible (true / false)
 })
 
+DropdownGroupBox:AddDropdown('MyVeryLongDropdown', {
+	Values = { 'This', 'is', 'a', 'very', 'long', 'dropdown', 'with', 'a', 'lot', 'of', 'values', 'but', 'you', 'can', 'see', 'more', 'than', '8', 'values' },
+	Default = 1, -- number index of the value / string
+	Multi = false, -- true / false, allows multiple choices to be selected
+
+	MaxVisibleDropdownItems = 12, -- Default: 8, allows you to change the size of the dropdown list
+
+	Text = 'A very long dropdown',
+	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+	Searchable = false, -- true / false, makes the dropdown searchable (great for a long list of values)
+
+	Callback = function(Value)
+		print('[cb] Very long dropdown got changed. New value:', Value)
+	end,
+
+	Disabled = false, -- Will disable the dropdown (true / false)
+	Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
 DropdownGroupBox:AddDropdown('MyPlayerDropdown', {
 	SpecialType = 'Player',
 	ExcludeLocalPlayer = true, -- true / false, excludes the localplayer from the Player type

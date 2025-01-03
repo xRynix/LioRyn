@@ -1,6 +1,7 @@
 ### 03.01.2025
 ```diff
-+ Added FormatDisplayValue option to Dropdowns
++ Added FormatDisplayValue option for Dropdowns
++ Added MaxVisibleDropdownItems option for Dropdowns
 + Fixed Searchable dropdowns not closing properly
 + Improved Example.lua dropdowns
 ```

@@ -3191,7 +3191,7 @@ do
             Tooltip.Disabled = Dropdown.Disabled;
         end
 
-        local MAX_DROPDOWN_ITEMS = 8;
+        local MAX_DROPDOWN_ITEMS = if typeof(Info.MaxVisibleDropdownItems) == "number" then math.clamp(Info.MaxVisibleDropdownItems, 4, 16) else 8;
 
         local ListOuter = Library:Create('Frame', {
             BackgroundColor3 = Color3.new(0, 0, 0);
@@ -3345,7 +3345,8 @@ do
                     Position = UDim2.new(0, 6, 0, 0);
                     TextSize = 14;
                     Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or Value;
-                    TextXAlignment = Enum.TextXAlignment.Left;
+                    TextXAlignment = Enum.TextXAlignment.Left;                  
+                    RichText = true;
                     ZIndex = 25;
                     Parent = Button;
                 });

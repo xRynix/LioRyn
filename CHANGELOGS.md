@@ -1,3 +1,10 @@
+### 03.01.2025
+```diff
++ Added FormatDisplayValue option to Dropdowns
++ Fixed Searchable dropdowns not closing properly
++ Improved Example.lua dropdowns
+```
+
 ### 30.12.2024
 ```diff
 + Added Prefix and Suffix to Sliders (Slider:SetPrefix, Slider:SetSuffix)

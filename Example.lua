@@ -189,7 +189,12 @@ LeftGroupBox:AddLabel('This is a label')
 LeftGroupBox:AddLabel('This is a label\n\nwhich wraps its text!', true)
 LeftGroupBox:AddLabel('This is a label exposed to Options', true, 'TestLabel')
 LeftGroupBox:AddLabel('SecondTestLabel', {
-	Text = 'This is a label made with table options',
+	Text = 'This is a label made with table options and an index',
+	DoesWrap = true -- Defaults to false
+})
+
+LeftGroupBox:AddLabel('SecondTestLabel', {
+	Text = 'This is a label that doesn\'t wrap it\'s own text',
 	DoesWrap = false -- Defaults to false
 })
 
@@ -197,7 +202,8 @@ LeftGroupBox:AddLabel('SecondTestLabel', {
 -- You index Options with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
 -- To set the text of the label you do label:SetText
 
--- Options.TestLabel:SetText("changed!")
+-- Options.TestLabel:SetText("first changed!")
+-- Options.SecondTestLabel:SetText("second changed!")
 
 
 -- Groupbox:AddDivider
@@ -285,7 +291,9 @@ end)
 -- Groupbox:AddDropdown
 -- Arguments: Idx, Info
 
-LeftGroupBox:AddDropdown('MyDropdown', {
+local DropdownGroupBox = Tabs.Main:AddRightGroupbox('Dropdowns')
+
+DropdownGroupBox:AddDropdown('MyDropdown', {
 	Values = { 'This', 'is', 'a', 'dropdown' },
 	Default = 1, -- number index of the value / string
 	Multi = false, -- true / false, allows multiple choices to be selected
@@ -294,7 +302,7 @@ LeftGroupBox:AddDropdown('MyDropdown', {
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
 	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
 
-	Searchable = true, -- true / false, makes the dropdown searchable (great for a long list of values)
+	Searchable = false, -- true / false, makes the dropdown searchable (great for a long list of values)
 
 	Callback = function(Value)
 		print('[cb] Dropdown got changed. New value:', Value)
@@ -310,8 +318,54 @@ end)
 
 Options.MyDropdown:SetValue('This')
 
+DropdownGroupBox:AddDropdown('MySearchableDropdown', {
+	Values = { 'This', 'is', 'a', 'searchable', 'dropdown' },
+	Default = 1, -- number index of the value / string
+	Multi = false, -- true / false, allows multiple choices to be selected
+
+	Text = 'A searchable dropdown',
+	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+	Searchable = true, -- true / false, makes the dropdown searchable (great for a long list of values)
+
+	Callback = function(Value)
+		print('[cb] Dropdown got changed. New value:', Value)
+	end,
+
+	Disabled = false, -- Will disable the dropdown (true / false)
+	Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
+DropdownGroupBox:AddDropdown('MyDisplayFormattedDropdown', {
+	Values = { 'This', 'is', 'a', 'formatted', 'dropdown' },
+	Default = 1, -- number index of the value / string
+	Multi = false, -- true / false, allows multiple choices to be selected
+
+	Text = 'A display formatted dropdown',
+	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+	FormatDisplayValue = function(Value) -- You can change the display value for any values. The value will be still same, only the UI changes.
+		if Value == 'formatted' then
+			return 'display formatted' -- formatted -> display formatted but in Options.MyDisplayFormattedDropdown.Value it will still return formatted if its selected.
+		end;
+
+		return Value
+	end,
+
+	Searchable = false, -- true / false, makes the dropdown searchable (great for a long list of values)
+
+	Callback = function(Value)
+		print('[cb] Display formatted dropdown got changed. New value:', Value)
+	end,
+
+	Disabled = false, -- Will disable the dropdown (true / false)
+	Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
 -- Multi dropdowns
-LeftGroupBox:AddDropdown('MyMultiDropdown', {
+DropdownGroupBox:AddDropdown('MyMultiDropdown', {
 	-- Default is the numeric index (e.g. "This" would be 1 since it if first in the values list)
 	-- Default also accepts a string as well
 
@@ -321,28 +375,58 @@ LeftGroupBox:AddDropdown('MyMultiDropdown', {
 	Default = 1,
 	Multi = true, -- true / false, allows multiple choices to be selected
 
-	Text = 'A dropdown',
+	Text = 'A multi dropdown',
 	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
 
 	Callback = function(Value)
-		print('[cb] Multi dropdown got changed:', Value)
+		print('[cb] Multi dropdown got changed:')
+		for key, value in next, Options.MyMultiDropdown.Value do
+			print(key, value) -- should print something like This, true
+		end
 	end
 })
-
-Options.MyMultiDropdown:OnChanged(function()
-	-- print('Dropdown got changed. New value:', )
-	print('Multi dropdown got changed:')
-	for key, value in next, Options.MyMultiDropdown.Value do
-		print(key, value) -- should print something like This, true
-	end
-end)
 
 Options.MyMultiDropdown:SetValue({
 	This = true,
 	is = true,
 })
 
-LeftGroupBox:AddDropdown('MyPlayerDropdown', {
+DropdownGroupBox:AddDropdown('MyDisabledDropdown', {
+    Values = { 'This', 'is', 'a', 'dropdown' },
+    Default = 1, -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'A disabled dropdown',
+    Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+    DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+    Callback = function(Value)
+        print('[cb] Disabled dropdown got changed. New value:', Value)
+    end,
+
+    Disabled = true, -- Will disable the dropdown (true / false)
+    Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
+DropdownGroupBox:AddDropdown('MyDisabledValueDropdown', {
+    Values = { 'This', 'is', 'a', 'dropdown', 'with', 'disabled', 'value' },
+    DisabledValues = { 'disabled' }, -- Disabled Values that are unclickable
+    Default = 1, -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'A dropdown with disabled value',
+    Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+    DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+    Callback = function(Value)
+        print('[cb] Dropdown with disabled value got changed. New value:', Value)
+    end,
+
+    Disabled = false, -- Will disable the dropdown (true / false)
+    Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
+DropdownGroupBox:AddDropdown('MyPlayerDropdown', {
 	SpecialType = 'Player',
 	ExcludeLocalPlayer = true, -- true / false, excludes the localplayer from the Player type
 	Text = 'A player dropdown',
@@ -353,22 +437,14 @@ LeftGroupBox:AddDropdown('MyPlayerDropdown', {
 	end
 })
 
-LeftGroupBox:AddDropdown('MyDisabledValueDropdown', {
-    Values = { 'This', 'is', 'a', 'dropdown' },
-    DisabledValues = {"disabled"}, -- Disabled Values that are unclickable
-    Default = 1, -- number index of the value / string
-    Multi = false, -- true / false, allows multiple choices to be selected
+DropdownGroupBox:AddDropdown('MyTeamDropdown', {
+	SpecialType = 'Team',
+	Text = 'A team dropdown',
+	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
 
-    Text = 'A dropdown with disabled value',
-    Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
-    DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
-
-    Callback = function(Value)
-        print('[cb] Dropdown got changed. New value:', Value)
-    end,
-
-    Disabled = false, -- Will disable the dropdown (true / false)
-    Visible = true, -- Will make the dropdown invisible (true / false)
+	Callback = function(Value)
+		print('[cb] Team dropdown got changed:', Value)
+	end
 })
 
 -- Label:AddColorPicker
@@ -476,7 +552,7 @@ Depbox:AddToggle('DepboxToggle', { Text = 'Sub-dependency box toggle' });
 -- When we do this, our SupDepbox automatically relies on the visiblity of the Depbox - on top of whatever additional dependencies we set
 local SubDepbox = Depbox:AddDependencyBox();
 SubDepbox:AddSlider('DepboxSlider', { Text = 'Slider', Default = 50, Min = 0, Max = 100, Rounding = 0 });
-SubDepbox:AddDropdown('DepboxDropdown', { Text = 'Dropdown', Default = 1, Values = {'a', 'b', 'ĉ'} });
+SubDepbox:AddDropdown('DepboxDropdown', { Text = 'Dropdown', Default = 1, Values = {'a', 'b', 'c'} });
 
 local SecretDepbox = SubDepbox:AddDependencyBox();
 SecretDepbox:AddLabel('You found a seĉret!')

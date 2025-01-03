@@ -605,6 +605,7 @@ function Library:MouseIsOverOpenedFrame(Input)
     if Library.IsMobile and Input then 
         Pos = Input.Position;
     end;
+
     for Frame, _ in next, Library.OpenedFrames do
         local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
 
@@ -1287,7 +1288,7 @@ do
         end);
 
         DisplayFrame.InputBegan:Connect(function(Input)
-            if Library:MouseIsOverOpenedFrame() then
+            if Library:MouseIsOverOpenedFrame(Input) then
                 return;
             end;
 
@@ -3034,6 +3035,7 @@ do
         assert(Info.AllowNull or Info.Default, 'AddDropdown: Missing default value. Pass `AllowNull` as true if this was intentional.')
 
         Info.Searchable = if typeof(Info.Searchable) == "boolean" then Info.Searchable else false;
+        Info.FormatDisplayValue = if typeof(Info.FormatDisplayValue) == "function" then Info.FormatDisplayValue else nil;
 
         if (not Info.Text) then
             Info.Compact = true;
@@ -3270,13 +3272,16 @@ do
             if Info.Multi then
                 for Idx, Value in next, Values do
                     if Dropdown.Value[Value] then
-                        Str = Str .. Value .. ', ';
+                        Str = Str .. (Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or Value) .. ', ';
                     end;
                 end;
 
                 Str = Str:sub(1, #Str - 2);
             else
                 Str = Dropdown.Value or '';
+                if Str ~= '' then
+                    Str = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Str)) or Str;
+                end;
             end;
 
             ItemList.Text = (Str == '' and '--' or Str);
@@ -3339,7 +3344,7 @@ do
                     Size = UDim2.new(1, -6, 1, 0);
                     Position = UDim2.new(0, 6, 0, 0);
                     TextSize = 14;
-                    Text = Value;
+                    Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or Value;
                     TextXAlignment = Enum.TextXAlignment.Left;
                     ZIndex = 25;
                     Parent = Button;
@@ -3554,7 +3559,7 @@ do
             end
         end;
 
-        local function ToggleUsingInput(Input)
+        DropdownOuter.InputBegan:Connect(function(Input)
             if Dropdown.Disabled then
                 return;
             end;
@@ -3566,18 +3571,13 @@ do
                     Dropdown:OpenDropdown();
                 end;
             end;
-        end
+        end);
 
         if Info.Searchable then
-            DropdownInner.InputBegan:Connect(ToggleUsingInput);
-            DropdownArrow.InputBegan:Connect(ToggleUsingInput);
-
             DropdownInnerSearch:GetPropertyChangedSignal("Text"):Connect(function()
                 Dropdown:BuildDropdownList()
-            end)
-        else
-            DropdownOuter.InputBegan:Connect(ToggleUsingInput);
-        end
+            end);
+        end;
 
         InputService.InputBegan:Connect(function(Input)
             if Dropdown.Disabled then

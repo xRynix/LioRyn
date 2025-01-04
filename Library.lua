@@ -3978,6 +3978,7 @@ function Library:LeftNotify(Text, Time, SoundId)
         TextXAlignment = Enum.TextXAlignment.Left;
         TextSize = 14;
         ZIndex = 103;
+        RichText = true;
         Parent = InnerFrame;
     });
 
@@ -4083,6 +4084,7 @@ function Library:RightNotify(Text, Time, SoundId)
         TextXAlignment = Enum.TextXAlignment.Right;
         TextSize = 14;
         ZIndex = 103;
+        RichText = true;
         Parent = InnerFrame;
     });
 

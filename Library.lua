@@ -98,29 +98,27 @@ local Library = {
     Buttons = Buttons;
 };
 
-local DPIScale = 1 --default value
+pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
+Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
+
+local DPIScale = 1;
 local function applyDPIScale(udim2)
-    return UDim2.new(udim2.X.Scale, udim2.X.Offset * DPIScale, udim2.Y.Scale, udim2.Y.Offset * DPIScale)
+    return UDim2.new(udim2.X.Scale, udim2.X.Offset * DPIScale, udim2.Y.Scale, udim2.Y.Offset * DPIScale);
 end
 
 local function applyTextScale(textSize)
-    return textSize * DPIScale
+    return textSize * DPIScale;
 end
 
 function Library:SetDPIScale(value: number) 
-    if type(value) ~= "number" then
-        return
-    end
+    if type(value) ~= "number" then return end;
     DPIScale = value / 100
 
     Library.MinSize = Vector2.new(550, 300) * DPIScale;
-
-    pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
-    Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
     
     if Library.IsMobile then
         Library.MinSize = Vector2.new(550, 200) * DPIScale;
-    end
+    end;
 end;
 Library:SetDPIScale(100);
 

@@ -76,8 +76,7 @@ local Library = {
     
     ActiveTab = nil;
     Toggled = false;
-    
-    MinSize = Vector2.new(550, 300);
+
     IsMobile = false;
     DevicePlatform = Enum.Platform.None;
 
@@ -99,12 +98,31 @@ local Library = {
     Buttons = Buttons;
 };
 
-pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
-Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
-
-if Library.IsMobile then
-    Library.MinSize = Vector2.new(550, 200);
+local DPIScale = 1 --default value
+local function applyDPIScale(udim2)
+    return UDim2.new(udim2.X.Scale, udim2.X.Offset * DPIScale, udim2.Y.Scale, udim2.Y.Offset * DPIScale)
 end
+
+local function applyTextScale(textSize)
+    return textSize * DPIScale
+end
+
+function Library:SetDPIScale(value: number) 
+    if type(value) ~= "number" then
+        return
+    end
+    DPIScale = value / 100
+
+    Library.MinSize = Vector2.new(550, 300) * DPIScale;
+
+    pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
+    Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
+    
+    if Library.IsMobile then
+        Library.MinSize = Vector2.new(550, 200) * DPIScale;
+    end
+end;
+Library:SetDPIScale(100);
 
 local RainbowStep = 0
 local Hue = 0
@@ -201,6 +219,12 @@ function Library:Create(Class, Properties)
     end;
 
     for Property, Value in next, Properties do
+        if (Property == "Size" or Property == "Position") then
+            Value = applyDPIScale(Value);
+        elseif Property == "TextSize" then
+            Value = applyTextScale(Value);
+        end;
+
         local success, err = pcall(function()
             _Instance[Property] = Value;
         end);
@@ -364,7 +388,7 @@ function Library:MakeResizable(Instance, MinSize)
 
     Instance.Active = true;
     
-    local ResizerImage_Size = 25;
+    local ResizerImage_Size = 25 * DPIScale;
     local ResizerImage_HoverTransparency = 0.5;
 
     local Resizer = Library:Create('Frame', {
@@ -492,7 +516,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
     local function UpdateText(Text)
         if Text == nil then return end
 
-        local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
+        local X, Y = Library:GetTextBounds(Text, Library.Font, 14 * DPIScale);
 
         Label.Text = Text;
         Tooltip.Size = UDim2.fromOffset(X + 5, Y + 4);
@@ -1654,7 +1678,7 @@ do
                 end;--]]
             end;
 
-            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23 + 6)
+            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, (YSize + 23 + 6) * DPIScale)
         end;
 
         function KeyPicker:GetState()
@@ -1886,11 +1910,11 @@ do
         });
 
         if Data.DoesWrap then
-            local Y = select(2, Library:GetTextBounds(Data.Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+            local Y = select(2, Library:GetTextBounds(Data.Text, Library.Font, 14 * DPIScale, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
             TextLabel.Size = UDim2.new(1, -4, 0, Y)
         else
             Library:Create('UIListLayout', {
-                Padding = UDim.new(0, 4);
+                Padding = UDim.new(0, 4 * DPIScale);
                 FillDirection = Enum.FillDirection.Horizontal;
                 HorizontalAlignment = Enum.HorizontalAlignment.Right;
                 SortOrder = Enum.SortOrder.LayoutOrder;
@@ -1905,7 +1929,7 @@ do
             TextLabel.Text = Text
 
             if Data.DoesWrap then
-                local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+                local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14 * DPIScale, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
                 TextLabel.Size = UDim2.new(1, -4, 0, Y)
             end
 
@@ -2077,12 +2101,12 @@ do
 
             assert(typeof(SubButton.Func) == 'function', 'AddButton: `Func` callback is missing.');
 
-            self.Outer.Size = UDim2.new(0.5, -2, 0, 20)
+            self.Outer.Size = UDim2.new(0.5, -2, 0, 20 * DPIScale)
 
             SubButton.Outer, SubButton.Inner, SubButton.Label = CreateBaseButton(SubButton)
 
             SubButton.Outer.Position = UDim2.new(1, 3, 0, 0)
-            SubButton.Outer.Size = UDim2.new(1, -3, 1, 0)--UDim2.fromOffset(self.Outer.AbsoluteSize.X - 2, self.Outer.AbsoluteSize.Y)
+            SubButton.Outer.Size = UDim2.fromOffset(self.Outer.AbsoluteSize.X - 2, self.Outer.AbsoluteSize.Y)
             SubButton.Outer.Parent = self.Outer
 
             function SubButton:UpdateColors()
@@ -3206,7 +3230,7 @@ do
         end;
 
         local function RecalculateListSize(YSize)
-            local Y = YSize or math.clamp(GetTableSize(Dropdown.Values) * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1;
+            local Y = YSize or math.clamp(GetTableSize(Dropdown.Values) * (20 * DPIScale), 0, MAX_DROPDOWN_ITEMS * (20 * DPIScale)) + 1;
             ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X + 0.5, Y)
         end;
 
@@ -3421,14 +3445,14 @@ do
                 Buttons[Button] = Table;
             end;
 
-            Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * 20) + 1);
+            Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1);
 
             -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
             -- ... and for some reason refreshing the Visible property fixes the issue??????? thanks roblox!
             Scrolling.Visible = false;
             Scrolling.Visible = true;
 
-            local Y = math.clamp(Count * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1;
+            local Y = math.clamp(Count * (20 * DPIScale), 0, MAX_DROPDOWN_ITEMS * (20 * DPIScale)) + 1;
             RecalculateListSize(Y);
         end;
 
@@ -3589,7 +3613,7 @@ do
                 local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize;
 
                 if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
-                    or Mouse.Y < (AbsPos.Y - 20 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
+                    or Mouse.Y < (AbsPos.Y - (20 * DPIScale) - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
 
                     Dropdown:CloseDropdown();
                 end;
@@ -4004,7 +4028,7 @@ function Library:LeftNotify(Text, Time, SoundId)
         }):Destroy();
     end
 
-    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
+    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
 
     task.spawn(function()
         if typeof(Time) == "Instance" then
@@ -4111,7 +4135,7 @@ function Library:RightNotify(Text, Time, SoundId)
         }):Destroy();
     end
 
-    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
+    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
 
     task.spawn(function()
         if typeof(Time) == "Instance" then
@@ -4687,7 +4711,7 @@ function Library:CreateWindow(...)
                     end;
                 end;
 
-                BoxOuter.Size = UDim2.new(1, 0, 0, 20 + Size + 2 + 2);
+                BoxOuter.Size = UDim2.new(1, 0, 0, (20 * DPIScale + Size) + 2 + 2);
             end;
 
             Groupbox.Container = Container;
@@ -4870,7 +4894,7 @@ function Library:CreateWindow(...)
                         end;
                     end;
 
-                    BoxOuter.Size = UDim2.new(1, 0, 0, 20 + Size + 2 + 2);
+                    BoxOuter.Size = UDim2.new(1, 0, 0, (20 * DPIScale + Size) + 2 + 2);
                 end;
 
                 Button.InputBegan:Connect(function(Input)

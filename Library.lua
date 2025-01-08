@@ -101,29 +101,9 @@ local Library = {
 pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
 Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
 
-local DPIScale = 1;
-local function applyDPIScale(udim2)
-    return UDim2.new(udim2.X.Scale, udim2.X.Offset * DPIScale, udim2.Y.Scale, udim2.Y.Offset * DPIScale);
-end
-
-local function applyTextScale(textSize)
-    return textSize * DPIScale;
-end
-
-function Library:SetDPIScale(value: number) 
-    if type(value) ~= "number" then return end;
-    DPIScale = value / 100
-
-    Library.MinSize = Vector2.new(550, 300) * DPIScale;
-    
-    if Library.IsMobile then
-        Library.MinSize = Vector2.new(550, 200) * DPIScale;
-    end;
-end;
-Library:SetDPIScale(100);
-
 local RainbowStep = 0
 local Hue = 0
+local DPIScale = 1
 
 table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
     RainbowStep = RainbowStep + Delta
@@ -142,12 +122,20 @@ table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
     end;
 end));
 
+local function ApplyDPIScale(Position)
+    return UDim2.new(Position.X.Scale, Position.X.Offset * DPIScale, Position.Y.Scale, Position.Y.Offset * DPIScale);
+end;
+
+local function ApplyTextScale(TextSize)
+    return TextSize * DPIScale;
+end;
+
 local function GetTableSize(t)
     local n = 0
     for _, _ in pairs(t) do
         n = n + 1
     end
-    return n   
+    return n;
 end;
 
 local function GetPlayersString(ExcludeLocalPlayer)
@@ -188,6 +176,18 @@ local function ThrowError(src, line, err)
     return msg;
 end;
 
+function Library:SetDPIScale(value: number) 
+    assert(type(value) == "number", "Expected type number for DPI scale but got " .. typeof(value))
+    
+    DPIScale = value / 100
+
+    Library.MinSize = Vector2.new(550, 300) * DPIScale;
+
+    if Library.IsMobile then
+        Library.MinSize = Vector2.new(550, 200) * DPIScale;
+    end
+end;
+
 function Library:SafeCallback(f, ...)
     if (not f) then return end;
 
@@ -218,9 +218,9 @@ function Library:Create(Class, Properties)
 
     for Property, Value in next, Properties do
         if (Property == "Size" or Property == "Position") then
-            Value = applyDPIScale(Value);
+            Value = ApplyDPIScale(Value);
         elseif Property == "TextSize" then
-            Value = applyTextScale(Value);
+            Value = ApplyTextScale(Value);
         end;
 
         local success, err = pcall(function()

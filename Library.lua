@@ -100,6 +100,7 @@ local Library = {
 
 pcall(function() Library.DevicePlatform = InputService:GetPlatform(); end); -- For safety so the UI library doesn't error.
 Library.IsMobile = (Library.DevicePlatform == Enum.Platform.Android or Library.DevicePlatform == Enum.Platform.IOS);
+Library.MinSize = if Library.IsMobile then Vector2.new(550, 200) else Vector2.new(550, 300);
 
 local RainbowStep = 0
 local Hue = 0
@@ -179,13 +180,8 @@ end;
 function Library:SetDPIScale(value: number) 
     assert(type(value) == "number", "Expected type number for DPI scale but got " .. typeof(value))
     
-    DPIScale = value / 100
-
-    Library.MinSize = Vector2.new(550, 300) * DPIScale;
-
-    if Library.IsMobile then
-        Library.MinSize = Vector2.new(550, 200) * DPIScale;
-    end
+    DPIScale = value / 100;
+    Library.MinSize = (if Library.IsMobile then Vector2.new(550, 200) else Vector2.new(550, 300)) * DPIScale;
 end;
 
 function Library:SafeCallback(f, ...)

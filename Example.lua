@@ -187,7 +187,7 @@ local MyDisabledButton = LeftGroupBox:AddButton({
 -- Arguments: Idx, Options
 LeftGroupBox:AddLabel('This is a label')
 LeftGroupBox:AddLabel('This is a label\n\nwhich wraps its text!', true)
-LeftGroupBox:AddLabel('This is a label exposed to Options', true, 'TestLabel')
+LeftGroupBox:AddLabel('This is a label exposed to Labels', true, 'TestLabel')
 LeftGroupBox:AddLabel('SecondTestLabel', {
 	Text = 'This is a label made with table options and an index',
 	DoesWrap = true -- Defaults to false

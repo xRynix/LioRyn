@@ -1631,7 +1631,7 @@ do
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == 'Toggle';
 
             if KeybindsToggle.Loaded then
-		KeybindsToggle:SetNormal(ShowToggle)
+		KeybindsToggle:SetNormal(not ShowToggle)
        
                 KeybindsToggle:SetVisibility(true);       
                 KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));

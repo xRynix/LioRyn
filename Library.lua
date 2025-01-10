@@ -1630,20 +1630,8 @@ do
             local State = KeyPicker:GetState();
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == 'Toggle';
 
-            if ShowToggle then
-                if KeybindsToggle.Loaded then
-                    KeybindsToggle:SetNormal(false);
-                    KeybindsToggle:SetVisibility(true);       
-                    KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));
-                    KeybindsToggle:Display(State);
-                end
-            else
-                if KeybindsToggle.Loaded then
-                    KeybindsToggle:SetNormal(true);
-                end
-            end;  
             if KeybindsToggle.Loaded then
-                if ShowToggle then KeybindsToggle:SetNormal(false); else KeybindsToggle:SetNormal(true); end;
+		KeybindsToggle:SetNormal(ShowToggle)
        
                 KeybindsToggle:SetVisibility(true);       
                 KeybindsToggle:SetText(string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode));

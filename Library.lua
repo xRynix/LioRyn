@@ -173,7 +173,7 @@ end;
 
 local function ThrowError(src, line, err)
     local msg = string.format('%s:%i: %s', src, line, err);
-	task.spawn(error, msg, 0);
+	task.spawn(error, msg);
     return msg;
 end;
 

@@ -199,7 +199,7 @@ LeftGroupBox:AddLabel('SecondTestLabel', {
 })
 
 -- Labels is a table inside Library that is added to getgenv()
--- You index Options with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
+-- You index Library.Labels with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
 -- To set the text of the label you do label:SetText
 
 -- Library.Labels.TestLabel:SetText("first changed!")

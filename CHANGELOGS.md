@@ -1,3 +1,8 @@
+### 18.01.2025
+```diff
++ Added ReturnInstanceInstead for Dropdowns (Will return Team/Player instance with SpecialType dropdowns if set to true)
+```
+
 ### 03.01.2025
 ```diff
 + Added FormatDisplayValue option for Dropdowns

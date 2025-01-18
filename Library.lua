@@ -139,36 +139,50 @@ local function GetTableSize(t)
     return n;
 end;
 
-local function GetPlayersString(ExcludeLocalPlayer)
+local function GetPlayers(ExcludeLocalPlayer, ReturnInstances)
     local PlayerList = Players:GetPlayers();
 
-    if ExcludeLocalPlayer == true then
-        local idx = table.find(PlayerList, Players.LocalPlayer);
+	if ExcludeLocalPlayer then
+		local Idx = table.find(PlayerList, LocalPlayer);
 
-        if idx then
-            table.remove(PlayerList, idx);
-        end;
+		if Idx then
+			table.remove(PlayerList, Idx);
+		end
+	end
+
+	table.sort(PlayerList, function(Player1, Player2)
+		return Player1.Name:lower() < Player2.Name:lower();
+	end)
+
+    if ReturnInstances == true then
+        return PlayerList;
     end;
 
-    for i = 1, #PlayerList do
-        PlayerList[i] = PlayerList[i].Name;
+    local FixedPlayerList = {};
+    for _, player in next, PlayerList do
+        FixedPlayerList[#FixedPlayerList + 1] = player.Name;
     end;
 
-    table.sort(PlayerList, function(str1, str2) return str1 < str2 end);
-
-    return PlayerList;
+    return FixedPlayerList;
 end;
 
-local function GetTeamsString()
+local function GetTeams(ReturnInstances)
     local TeamList = Teams:GetTeams();
 
-    for i = 1, #TeamList do
-        TeamList[i] = TeamList[i].Name;
+	table.sort(TeamList, function(Team1, Team2)
+		return Team1.Name:lower() < Team2.Name:lower();
+	end)
+
+    if ReturnInstances == true then
+        return TeamList;
     end;
 
-    table.sort(TeamList, function(str1, str2) return str1 < str2 end);
+    local FixedTeamList = {};
+    for _, team in next, TeamList do
+        FixedTeamList[#FixedTeamList + 1] = team.Name;
+    end;
 
-    return TeamList;
+    return FixedTeamList;
 end;
 
 local function ThrowError(src, line, err)
@@ -3027,13 +3041,15 @@ do
     end;
 
     function Funcs:AddDropdown(Idx, Info)
+        Info.ReturnInstanceInstead = if typeof(Info.ReturnInstanceInstead) == "boolean" then Info.ReturnInstanceInstead else false;
+
         if Info.SpecialType == 'Player' then
             Info.ExcludeLocalPlayer = if typeof(Info.ExcludeLocalPlayer) == "boolean" then Info.ExcludeLocalPlayer else false;
 
-            Info.Values = GetPlayersString(Info.ExcludeLocalPlayer);
+            Info.Values = GetPlayers(Info.ExcludeLocalPlayer, Info.ReturnInstanceInstead);
             Info.AllowNull = true;
         elseif Info.SpecialType == 'Team' then
-            Info.Values = GetTeamsString();
+            Info.Values = GetTeams(Info.ReturnInstanceInstead);
             Info.AllowNull = true;
         end;
 
@@ -3060,6 +3076,7 @@ do
 
             OriginalText = Info.Text; Text = Info.Text;
             ExcludeLocalPlayer = Info.ExcludeLocalPlayer;
+            ReturnInstanceInstead = Info.ReturnInstanceInstead;
         };
 
         local DropdownLabel;
@@ -3277,20 +3294,24 @@ do
 
             if Info.Multi then
                 for Idx, Value in next, Values do
+                    local StringValue = if typeof(Value) == "Instance" then Value.Name else Value;
+
                     if Dropdown.Value[Value] then
-                        Str = Str .. (Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or Value) .. ', ';
+                        Str = Str .. (Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(StringValue)) or StringValue) .. ', ';
                     end;
                 end;
 
                 Str = Str:sub(1, #Str - 2);
+                ItemList.Text = (Str == '' and '--' or Str);
             else
-                Str = Dropdown.Value or '';
-                if Str ~= '' then
-                    Str = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Str)) or Str;
+                if not Dropdown.Value then
+                    ItemList.Text = '--';
+                    return;
                 end;
-            end;
 
-            ItemList.Text = (Str == '' and '--' or Str);
+                local StringValue = if typeof(Dropdown.Value) == "Instance" then Dropdown.Value.Name else Dropdown.Value;
+                ItemList.Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(StringValue)) or StringValue;
+            end;
         end;
 
         function Dropdown:GetActiveValues()
@@ -3320,11 +3341,12 @@ do
 
             local Count = 0;
             for Idx, Value in next, Values do
-                if Info.Searchable and not string.lower(Value):match(string.lower(DropdownInnerSearch.Text)) then
+                local StringValue = if typeof(Value) == "Instance" then Value.Name else Value;
+                if Info.Searchable and not string.lower(StringValue):match(string.lower(DropdownInnerSearch.Text)) then
                     continue;
                 end
 
-                local IsDisabled = table.find(DisabledValues, Value);
+                local IsDisabled = table.find(DisabledValues, StringValue);
                 local Table = {};
 
                 Count = Count + 1;
@@ -3350,8 +3372,8 @@ do
                     Size = UDim2.new(1, -6, 1, 0);
                     Position = UDim2.new(0, 6, 0, 0);
                     TextSize = 14;
-                    Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(Value)) or Value;
-                    TextXAlignment = Enum.TextXAlignment.Left;                  
+                    Text = Info.FormatDisplayValue and tostring(Info.FormatDisplayValue(StringValue)) or StringValue;
+                    TextXAlignment = Enum.TextXAlignment.Left;
                     RichText = true;
                     ZIndex = 25;
                     Parent = Button;
@@ -3391,6 +3413,7 @@ do
                                 Selected = Try;
 
                                 if Selected then
+                                    warn(Value, StringValue, typeof(Value), typeof(StringValue))
                                     Dropdown.Value[Value] = true;
                                 else
                                     Dropdown.Value[Value] = nil;
@@ -5213,21 +5236,28 @@ function Library:CreateWindow(...)
 end;
 
 local function OnPlayerChange()
-    local PlayerList, ExcludedPlayerList = GetPlayersString(), GetPlayersString(true);
+    local PlayerList, ExcludedPlayerList = GetPlayers(false, false), GetPlayers(true, false);
+    local StringPlayerList, StringExcludedPlayerList = GetPlayers(false, true), GetPlayers(true, true);
 
     for _, Value in next, Options do
         if Value.SetValues and Value.Type == 'Dropdown' and Value.SpecialType == 'Player' then
-            Value:SetValues(Value.ExcludeLocalPlayer and ExcludedPlayerList or PlayerList);
+            Value:SetValues(
+                if Value.ReturnInstanceInstead then
+                    (if Value.ExcludeLocalPlayer then ExcludedPlayerList else PlayerList)
+                else
+                    (if Value.ExcludeLocalPlayer then StringExcludedPlayerList else StringPlayerList)
+            );
         end;
     end;
 end;
 
 local function OnTeamChange()
-    local TeamList = GetTeamsString();
+    local TeamList = GetTeams(false);
+    local StringTeamList = GetTeams(true);
 
     for _, Value in next, Options do
         if Value.SetValues and Value.Type == 'Dropdown' and Value.SpecialType == 'Team' then
-            Value:SetValues(TeamList);
+            Value:SetValues(if Value.ReturnInstanceInstead then TeamList else StringTeamList);
         end;
     end;
 end;

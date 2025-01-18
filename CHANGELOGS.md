@@ -1,6 +1,7 @@
 ### 18.01.2025
 ```diff
 + Added ReturnInstanceInstead for Dropdowns (Will return Team/Player instance with SpecialType dropdowns if set to true)
++ Better Library:SafeCallback error messages (thanks deivid)
 ```
 
 ### 03.01.2025

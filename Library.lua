@@ -185,12 +185,6 @@ local function GetTeams(ReturnInstances)
     return FixedTeamList;
 end;
 
-local function ThrowError(src, line, err)
-    local msg = string.format('%s:%i: %s', src, line, err);
-	task.spawn(error, msg);
-    return msg;
-end;
-
 function Library:SetDPIScale(value: number) 
     assert(type(value) == "number", "Expected type number for DPI scale but got " .. typeof(value))
     
@@ -198,20 +192,24 @@ function Library:SetDPIScale(value: number)
     Library.MinSize = (if Library.IsMobile then Vector2.new(550, 200) else Vector2.new(550, 300)) * DPIScale;
 end;
 
-function Library:SafeCallback(f, ...)
-    if (not f) then return end;
+function Library:SafeCallback(Func, ...)
+	if not (Func and typeof(Func) == "function") then
+		return
+	end
 
-    local success, event = pcall(f, ...);
-    if success then return end;
+	local Success, Response = pcall(Func, ...)
+	if Success then
+		return Response
+	end
 
-    local _, i = event:find(":%d+: ");
-    local line, src = tostring(debug.info(2, "l")), tostring(debug.info(2, "n"));
+	local Traceback = debug.traceback():gsub("\n", " ")
+	local _, i = Traceback:find(":%d+ ")
+	Traceback = Traceback:sub(i + 1):gsub(" :", ":")
 
-    src = src == "" and "SafeCallback" or src;
-    event = (not i) and event or event:sub(i + 1);
-
-    local msg = ThrowError(src, line, event);
-    if Library.NotifyOnError then Library:Notify(msg) end;
+	task.defer(error, Response .. " - " .. Traceback)
+	if Library.NotifyOnError then
+		Library:Notify(Response)
+	end
 end;
 
 function Library:AttemptSave()
@@ -3933,6 +3931,10 @@ function Library:SetWatermark(Text)
     Library:SetWatermarkVisibility(true)
 
     Library.WatermarkText.Text = Text;
+end;
+
+function Library:SetNotifySide(Side: string)
+	Library.NotifySide = Side;
 end;
 
 function Library:Notify(...)

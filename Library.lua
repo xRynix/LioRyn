@@ -3935,13 +3935,27 @@ function Library:SetWatermark(Text)
     Library.WatermarkText.Text = Text;
 end;
 
-function Library:Notify(Text, Time, SoundId)
+function Library:Notify(...)
+    local Data = {}
+    local Info = select(1, ...)
+
+	if typeof(Info) == "table" then
+		Data.Title = tostring(Info.Title)
+		Data.Description = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Info.Description)
+		Data.Time = Info.Time or 5
+		Data.SoundId = Info.SoundId
+	else
+		Data.Description = tostring(Info)
+		Data.Time = select(2, ...) or 5
+		Data.SoundId = select(3, ...)
+	end
+    
     local Side = string.lower(Library.NotifySide);
 
     if Side == "right" then
-        Library:RightNotify(Text, Time, SoundId);
+        Library:RightNotify(Data.Description, Data.Time, Data.SoundId);
     else
-        Library:LeftNotify(Text, Time, SoundId);
+        Library:LeftNotify(Data.Description, Data.Time, Data.SoundId);
     end
 end;
 

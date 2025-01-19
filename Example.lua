@@ -198,12 +198,12 @@ LeftGroupBox:AddLabel('SecondTestLabel', {
 	DoesWrap = false -- Defaults to false
 })
 
--- Options is a table added to getgenv() by the library
--- You index Options with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
+-- Labels is a table inside Library that is added to getgenv()
+-- You index Library.Labels with the specified index, in this case it is 'SecondTestLabel' & 'TestLabel'
 -- To set the text of the label you do label:SetText
 
--- Options.TestLabel:SetText("first changed!")
--- Options.SecondTestLabel:SetText("second changed!")
+-- Library.Labels.TestLabel:SetText("first changed!")
+-- Library.Labels.SecondTestLabel:SetText("second changed!")
 
 
 -- Groupbox:AddDivider

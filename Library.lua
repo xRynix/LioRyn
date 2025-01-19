@@ -197,19 +197,23 @@ function Library:SafeCallback(Func, ...)
 		return
 	end
 
-	local Success, Response = pcall(Func, ...)
-	if Success then
-		return Response
-	end
+    local run = function(func, ...)
+        local Success, Response = pcall(func, ...)
+        if Success then
+            return Response
+        end
+    
+        local Traceback = debug.traceback():gsub("\n", " ")
+        local _, i = Traceback:find(":%d+ ")
+        Traceback = Traceback:sub(i + 1):gsub(" :", ":")
+    
+        task.defer(error, Response .. " - " .. Traceback)
+        if Library.NotifyOnError then
+            Library:Notify(Response)
+        end
+    end;
 
-	local Traceback = debug.traceback():gsub("\n", " ")
-	local _, i = Traceback:find(":%d+ ")
-	Traceback = Traceback:sub(i + 1):gsub(" :", ":")
-
-	task.defer(error, Response .. " - " .. Traceback)
-	if Library.NotifyOnError then
-		Library:Notify(Response)
-	end
+    task.spawn(run, Func, ...);
 end;
 
 function Library:AttemptSave()

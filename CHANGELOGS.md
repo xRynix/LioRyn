@@ -1,3 +1,8 @@
+### 31.01.2025
+```diff
++ Added AddDropdown as an Addon
+```
+
 ### 18.01.2025
 ```diff
 + Added ReturnInstanceInstead for Dropdowns (Will return Team/Player instance with SpecialType dropdowns if set to true)

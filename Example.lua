@@ -547,6 +547,31 @@ end)
 
 Options.KeyPicker:SetValue({ 'MB2', 'Hold' }) -- Sets keybind to MB2, mode to Hold
 
+-- Label:AddDropdown
+-- Arguments: Idx, Info
+
+-- Info table is the same as the default Dropdowns
+-- These dropdowns are very compacted
+
+LeftGroupBox:AddLabel('Dropdown'):AddDropdown('MyDropdown', {
+	Values = { 'Addon', 'Dropdown' },
+	Default = 1, -- number index of the value / string
+	Multi = false, -- true / false, allows multiple choices to be selected
+
+	-- Text is not required for this Dropdown --
+	Tooltip = 'This is a tooltip', -- Information shown when you hover over the dropdown
+	DisabledTooltip = 'I am disabled!', -- Information shown when you hover over the dropdown while it's disabled
+
+	Searchable = false, -- true / false, makes the dropdown searchable (great for a long list of values)
+
+	Callback = function(Value)
+		print('[cb] Dropdown got changed. New value:', Value)
+	end,
+
+	Disabled = false, -- Will disable the dropdown (true / false)
+	Visible = true, -- Will make the dropdown invisible (true / false)
+})
+
 -- Long text label to demonstrate UI scrolling behaviour.
 local LeftGroupBox2 = Tabs.Main:AddLeftGroupbox('Groupbox #2');
 LeftGroupBox2:AddLabel('Oh no...\nThis label spans multiple lines!\n\nWe\'re gonna run out of UI space...\nJust kidding! Scroll down!\n\n\nHello from below!', true)

@@ -42,6 +42,8 @@ getgenv().Linoria = {
 
 getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
 getgenv().Options = Options;
+getgenv().Labels = Labels;
+getgenv().Buttons = Buttons;
 
 local LibraryMainOuterFrame = nil;
 local Library = {

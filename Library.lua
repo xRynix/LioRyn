@@ -2255,12 +2255,12 @@ do
         end;
 
         function Dropdown:AddValues(NewValues)
-            if typeof(Values) == "table" then
-				for _, val in pairs(Values) do
+            if typeof(NewValues) == "table" then
+				for _, val in pairs(NewValues) do
 					table.insert(Dropdown.Values, val);
 				end
-			elseif typeof(Values) == "string" then
-				table.insert(Dropdown.Values, val);
+			elseif typeof(NewValues) == "string" then
+				table.insert(Dropdown.Values, NewValues);
 			else
 				return;
 			end
@@ -2282,7 +2282,7 @@ do
 					table.insert(Dropdown.DisabledValues, val)
 				end
 			elseif typeof(DisabledValues) == "string" then
-				table.insert(Dropdown.DisabledValues, val)
+				table.insert(Dropdown.DisabledValues, DisabledValues)
 			else
 				return
 			end

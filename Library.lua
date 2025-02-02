@@ -2254,6 +2254,20 @@ do
             Dropdown:BuildDropdownList();
         end;
 
+        function Dropdown:AddValues(NewValues)
+            if typeof(Values) == "table" then
+				for _, val in pairs(Values) do
+					table.insert(Dropdown.Values, val);
+				end
+			elseif typeof(Values) == "string" then
+				table.insert(Dropdown.Values, val);
+			else
+				return;
+			end
+
+			Dropdown:BuildDropdownList();
+        end;
+
         function Dropdown:SetDisabledValues(NewValues)
             if NewValues then
                 Dropdown.DisabledValues = NewValues;
@@ -2261,6 +2275,20 @@ do
 
             Dropdown:BuildDropdownList();
         end
+
+        function Dropdown:AddDisabledValues(DisabledValues)
+			if typeof(DisabledValues) == "table" then
+				for _, val in pairs(DisabledValues) do
+					table.insert(Dropdown.DisabledValues, val)
+				end
+			elseif typeof(DisabledValues) == "string" then
+				table.insert(Dropdown.DisabledValues, val)
+			else
+				return
+			end
+
+			Dropdown:BuildDropdownList()
+		end
 
         function Dropdown:SetVisible(Visibility)
             Dropdown.Visible = Visibility;

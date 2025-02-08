@@ -777,6 +777,10 @@ Library:GiveSignal(ScreenGui.DescendantRemoving:Connect(function(Instance)
     end;
 end))
 
+local function Trim(Text: string)
+	return Text:match("^%s*(.-)%s*$")
+end
+
 local BaseAddons = {};
 
 do
@@ -2893,6 +2897,8 @@ do
             Finished = Info.Finished or false;
             Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
             Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
+	    AllowEmpty = if typeof(Info.AllowEmpty) == "boolean" then Info.AllowEmpty else true;
+            EmptyReset = if typeof(Info.EmptyReset) == "string" then Info.EmptyReset else "---";
             Type = 'Input';
 
             Callback = Info.Callback or function(Value) end;
@@ -2976,7 +2982,7 @@ do
             PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
             PlaceholderText = Info.Placeholder or '';
 
-            Text = Info.Default or '';
+            Text = Info.Default or (if Textbox.AllowEmpty == false then Textbox.EmptyReset else "---");
             TextColor3 = Library.FontColor;
             TextSize = 14;
             TextStrokeTransparency = 0;
@@ -3020,6 +3026,10 @@ do
         end;
 
         function Textbox:SetValue(Text)
+	    if not Textbox.AllowEmpty and Trim(Text) == "" then
+		Text = Textbox.EmptyReset;
+	    end
+
             if Info.MaxLength and #Text > Info.MaxLength then
                 Text = Text:sub(1, Info.MaxLength);
             end;

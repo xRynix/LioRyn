@@ -1,3 +1,8 @@
+### 12.02.2025
+```diff
++ Added Notification:ChangeTitle, Notification:ChangeDescription
+```
+
 ### 31.01.2025
 ```diff
 + Added AddDropdown as an Addon

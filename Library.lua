@@ -764,7 +764,7 @@ function Library:Unload()
         Library:SafeCallback(UnloadCallback)
     end
 
-    getgenv().LinoriaLib = nil
+    getgenv().Linoria = nil
     ScreenGui:Destroy()
 end
 

@@ -779,7 +779,11 @@ Library:GiveSignal(ScreenGui.DescendantRemoving:Connect(function(Instance)
 end))
 
 local function Trim(Text: string)
-    return Text:match("^%s*(.-)%s*$")
+    if Text == nil then
+        return "";
+    end
+
+    return tostring(Text):match("^%s*(.-)%s*$")
 end
 
 local BaseAddons = {};
@@ -4686,7 +4690,7 @@ function Library:Notify(...)
         AnchorPoint = if Side == "left" then Vector2.new(0, 0) else Vector2.new(1, 0);
         Position = if Side == "left" then UDim2.new(0, 4, 0, 0) else UDim2.new(1, -4, 0, 0);
         Size = UDim2.new(1, -4, 1, 0);
-        Text = if typeof(Data) == "table" then "[" .. Data.Title .. "] " .. tostring(Data.Description) else tostring(Data.Description);
+        Text = (if Trim(Data["Title"]) == "" then "" else "[" .. tostring(Data.Title) .. "] ") .. tostring(Data.Description);
         TextXAlignment = if Side == "left" then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right;
         TextSize = 14;
         ZIndex = 103;
@@ -4715,7 +4719,7 @@ function Library:Notify(...)
         NewText = if NewText == nil then "" else tostring(NewText);
 
         Data.Title = NewText;
-        NotifyLabel.Text = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Data.Description);
+        NotifyLabel.Text = (if Trim(Data["Title"]) == "" then "" else "[" .. tostring(Data.Title) .. "] ") .. tostring(Data.Description);
 
         Data:Resize();
     end
@@ -4725,7 +4729,7 @@ function Library:Notify(...)
         NewText = tostring(NewText);
 
         Data.Description = NewText;
-        NotifyLabel.Text = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Data.Description);
+        NotifyLabel.Text = (if Trim(Data["Title"]) == "" then "" else "[" .. tostring(Data.Title) .. "] ") .. tostring(Data.Description);
 
         Data:Resize();
     end

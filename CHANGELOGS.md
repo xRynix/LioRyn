@@ -1,3 +1,9 @@
+### 14.2.2025
+```diff
++ Fixed AddValues and AddDisabledValues missing in certain Dropdowns
++ Fixed certain issues RectangularObject has found
+```
+
 ### 12.02.2025
 ```diff
 + Added Notification:ChangeTitle, Notification:ChangeDescription

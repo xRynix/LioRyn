@@ -4619,7 +4619,7 @@ function Library:SetNotifySide(Side: string)
 end;
 
 function Library:Notify(...)
-    local Data = {}
+    local Data = { Steps = 1 }
     local Info = select(1, ...)
 
     if typeof(Info) == "table" then
@@ -4732,6 +4732,10 @@ function Library:Notify(...)
         NotifyLabel.Text = (if Trim(Data["Title"]) == "" then "" else "[" .. tostring(Data.Title) .. "] ") .. tostring(Data.Description);
 
         Data:Resize();
+    end
+
+    function Data:ChangeStep()
+        -- this is supposed to be empty
     end
 
     Data:Resize();

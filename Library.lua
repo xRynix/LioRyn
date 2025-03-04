@@ -14,6 +14,8 @@ local DrawingLib = typeof(Drawing) == "table" and Drawing or { drawing_replaced 
 local ProtectGui = protectgui or (function() end);
 local GetHUI = gethui or (function() return CoreGui end);
 
+local IsBadDrawingLib = false;
+
 local ScreenGui = Instance.new('ScreenGui');
 pcall(ProtectGui, ScreenGui);
 
@@ -5598,41 +5600,43 @@ function Library:CreateWindow(...)
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
             Outer.Visible = true;
 
-            if DrawingLib.drawing_replaced ~= true then
-                local Cursor = DrawingLib.new("Triangle")
-                Cursor.Thickness = 1
-                Cursor.Filled = true
-                Cursor.Visible = Library.ShowCustomCursor
-
-                local CursorOutline = DrawingLib.new("Triangle")
-                CursorOutline.Thickness = 1
-                CursorOutline.Filled = false
-                CursorOutline.Color = Color3.new(0, 0, 0)
-                CursorOutline.Visible = Library.ShowCustomCursor
-                
-                local OldMouseIconState = InputService.MouseIconEnabled
-                pcall(function() RunService:UnbindFromRenderStep("LinoriaCursor") end)
-                RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value - 1, function()
-                    InputService.MouseIconEnabled = not Library.ShowCustomCursor
-                    local mPos = InputService:GetMouseLocation()
-                    local X, Y = mPos.X, mPos.Y
-                    Cursor.Color = Library.AccentColor
-                    Cursor.PointA = Vector2.new(X, Y)
-                    Cursor.PointB = Vector2.new(X + 16, Y + 6)
-                    Cursor.PointC = Vector2.new(X + 6, Y + 16)
+            if DrawingLib.drawing_replaced ~= true and IsBadDrawingLib ~= true then
+                IsBadDrawingLib = not (pcall(function()
+                    local Cursor = DrawingLib.new("Triangle")
+                    Cursor.Thickness = 1
+                    Cursor.Filled = true
                     Cursor.Visible = Library.ShowCustomCursor
-                    CursorOutline.PointA = Cursor.PointA
-                    CursorOutline.PointB = Cursor.PointB
-                    CursorOutline.PointC = Cursor.PointC
-                    CursorOutline.Visible = Library.ShowCustomCursor
 
-                    if not Toggled or (not ScreenGui or not ScreenGui.Parent) then
-                        InputService.MouseIconEnabled = OldMouseIconState
-                        if Cursor then Cursor:Destroy() end
-                        if CursorOutline then CursorOutline:Destroy() end
-                        RunService:UnbindFromRenderStep("LinoriaCursor")
-                    end
-                end)
+                    local CursorOutline = DrawingLib.new("Triangle")
+                    CursorOutline.Thickness = 1
+                    CursorOutline.Filled = false
+                    CursorOutline.Color = Color3.new(0, 0, 0)
+                    CursorOutline.Visible = Library.ShowCustomCursor
+                    
+                    local OldMouseIconState = InputService.MouseIconEnabled
+                    pcall(function() RunService:UnbindFromRenderStep("LinoriaCursor") end)
+                    RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value - 1, function()
+                        InputService.MouseIconEnabled = not Library.ShowCustomCursor
+                        local mPos = InputService:GetMouseLocation()
+                        local X, Y = mPos.X, mPos.Y
+                        Cursor.Color = Library.AccentColor
+                        Cursor.PointA = Vector2.new(X, Y)
+                        Cursor.PointB = Vector2.new(X + 16, Y + 6)
+                        Cursor.PointC = Vector2.new(X + 6, Y + 16)
+                        Cursor.Visible = Library.ShowCustomCursor
+                        CursorOutline.PointA = Cursor.PointA
+                        CursorOutline.PointB = Cursor.PointB
+                        CursorOutline.PointC = Cursor.PointC
+                        CursorOutline.Visible = Library.ShowCustomCursor
+
+                        if not Toggled or (not ScreenGui or not ScreenGui.Parent) then
+                            InputService.MouseIconEnabled = OldMouseIconState
+                            if Cursor then Cursor:Destroy() end
+                            if CursorOutline then CursorOutline:Destroy() end
+                            RunService:UnbindFromRenderStep("LinoriaCursor")
+                        end
+                    end)
+                end));
             end
         end;
 

@@ -1,3 +1,8 @@
+### 10.3.2025
+```diff
++ Callback (OnChanged) in ColorPickers now return the color and transparency (PR #32 - ty RectangularObject)
+```
+
 ### 14.2.2025
 ```diff
 + Fixed AddValues and AddDisabledValues missing in certain Dropdowns

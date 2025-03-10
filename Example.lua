@@ -82,24 +82,24 @@ LeftGroupBox:AddToggle('MyToggle', {
 	Title = 'Some color1', -- Optional. Allows you to have a custom color picker title (when you open it)
 	Transparency = 0, -- Optional. Enables transparency changing for this color picker (leave as nil to disable)
 
-	Callback = function(Value)
-		print('[cb] Color changed!', Value)
+	Callback = function(Value, Transparency)
+		print('[cb] Color changed!', Value, '| Transparency changed to:', Transparency)
 	end
 }):AddColorPicker('ColorPicker2', {
 	Default = Color3.new(0, 1, 0),
 	Title = 'Some color2',
 	Transparency = 0,
 
-	Callback = function(Value)
-		print('[cb] Color changed!', Value)
+	Callback = function(Value, Transparency)
+		print('[cb] Color changed!', Value, '| Transparency changed to:', Transparency)
 	end
 }):AddColorPicker('ColorPicker3', {
 	Default = Color3.new(0, 0, 1),
 	Title = 'Some color3',
 	Transparency = 0,
 
-	Callback = function(Value)
-		print('[cb] Color changed!', Value)
+	Callback = function(Value, Transparency)
+		print('[cb] Color changed!', Value, '| Transparency changed to:', Transparency)
 	end
 })
 

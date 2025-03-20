@@ -5585,7 +5585,9 @@ function Library:CreateWindow(...)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
-        if self._lastToggleTime and tick() - self._lastToggleTime < 0.3 then
+        self._lastToggleTime = self._lastToggleTime or 0
+
+        if tick() - self._lastToggleTime < 0.3 then
             return
         end
         self._lastToggleTime = tick()
@@ -5646,8 +5648,8 @@ function Library:CreateWindow(...)
                 elseif Option.Type == 'KeyPicker' then
                     Option:SetModePickerVisibility(false);
                 elseif Option.Type == 'ColorPicker' then
-                    Option.ContextMenu:Hide();
                     Option:Hide();
+                    Option.ContextMenu:Hide();
                 end
             end)
         end

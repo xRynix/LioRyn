@@ -5585,6 +5585,11 @@ function Library:CreateWindow(...)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
+        if self._lastToggleTime and tick() - self._lastToggleTime < 0.3 then
+            return
+        end
+        self._lastToggleTime = tick()
+
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
         Toggled = (not Toggled);
@@ -5592,7 +5597,6 @@ function Library:CreateWindow(...)
         ModalElement.Modal = Toggled;
 
         if Toggled then
-            -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
             Outer.Visible = true;
 
             if DrawingLib.drawing_replaced ~= true and IsBadDrawingLib ~= true then
@@ -5688,12 +5692,19 @@ function Library:CreateWindow(...)
     end
 
     Library:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local mousePos = InputService:GetMouseLocation()
+            if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                return
+            end
+        end
+        
         if typeof(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' then
             if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == Library.ToggleKeybind.Value then
-                task.spawn(Library.Toggle)
+                task.spawn(Library.Toggle, Library)
             end
         elseif Input.KeyCode == Enum.KeyCode.RightControl or (Input.KeyCode == Enum.KeyCode.RightShift and (not Processed)) then
-            task.spawn(Library.Toggle)
+            task.spawn(Library.Toggle, Library)
         end
     end));
 

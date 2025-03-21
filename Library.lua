@@ -1847,9 +1847,10 @@ do
         return self;
     end;
 
-    local _lastToggleTime = 0
-    local _lastDropdownTime = 0
-    local _lastSliderTime = 0
+    local _toggleDebounce = false
+    local _dropdownDebounce = false
+    local _sliderDebounce = false
+    
 
     function BaseAddonsFuncs:AddDropdown(Idx, Info)
         Info.ReturnInstanceInstead = if typeof(Info.ReturnInstanceInstead) == "boolean" then Info.ReturnInstanceInstead else false;
@@ -2076,9 +2077,18 @@ do
             DropdownArrow.ImageColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
         end;
 
+        local _dropdownDebounce = false
+
         function Dropdown:Display()
             local Values = Dropdown.Values;
             local Str = '';
+
+            if _dropdownDebounce then return end
+            _dropdownDebounce = true
+
+            task.delay(0.3, function()
+                _dropdownDebounce = false
+            end)
 
             if Info.Multi then
                 for Idx, Value in next, Values do
@@ -2196,6 +2206,13 @@ do
 
                 if not IsDisabled then
                     Button.MouseButton1Click:Connect(function(Input)
+                        if _dropdownDebounce then return end
+                        _dropdownDebounce = true
+
+                        task.delay(0.3, function()
+                            _dropdownDebounce = false
+                        end)
+
                         local Try = not Selected;
 
                         if Dropdown:GetActiveValues() == 1 and (not Try) and (not Info.AllowNull) then
@@ -2242,8 +2259,6 @@ do
 
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1);
 
-            -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
-            -- ... and for some reason refreshing the Visible property fixes the issue??????? thanks roblox!
             Scrolling.Visible = false;
             Scrolling.Visible = true;
 
@@ -2320,7 +2335,14 @@ do
         function Dropdown:OpenDropdown()
             if Dropdown.Disabled then
                 return;
-            end;
+            end
+
+            if _dropdownDebounce then return end
+            _dropdownDebounce = true
+
+            task.delay(0.3, function()
+                _dropdownDebounce = false
+            end)
 
             if Library.IsMobile then
                 Library.CanDrag = false;
@@ -2340,6 +2362,13 @@ do
         end;
 
         function Dropdown:CloseDropdown()
+            if _dropdownDebounce then return end
+            _dropdownDebounce = true
+
+            task.delay(0.3, function()
+                _dropdownDebounce = false
+            end)
+
             if Library.IsMobile then         
                 Library.CanDrag = true;
             end;
@@ -3620,11 +3649,12 @@ do
             end;
 
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-                local currentTime = tick()
-                if currentTime - _lastSliderTime < 0.3 then
-                    return
-                end
-                _lastSliderTime = currentTime
+                if _sliderDebounce then return end
+                _sliderDebounce = true
+                
+                task.delay(0.3, function()
+                    _sliderDebounce = false
+                end)
 
                 local mousePos = InputService:GetMouseLocation()
                 if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
@@ -5604,11 +5634,12 @@ function Library:CreateWindow(...)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
-        local currentTime = tick()
-        if currentTime - _lastToggleTime < 0.3 then
-            return
-        end
-        _lastToggleTime = currentTime
+        if _toggleDebounce then return end
+        _toggleDebounce = true
+
+        task.delay(0.3, function()
+            _toggleDebounce = false
+        end)
 
         local FadeTime = Config.MenuFadeTime;
         Fading = true;

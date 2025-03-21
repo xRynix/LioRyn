@@ -42,7 +42,7 @@ getgenv().Linoria = {
     Buttons = Buttons;
 }
 
-getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
+getgenv().Toggles = Toggles; 
 getgenv().Options = Options;
 getgenv().Labels = Labels;
 getgenv().Buttons = Buttons;
@@ -5696,7 +5696,7 @@ function Library:CreateWindow(...)
     Library:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = InputService:GetMouseLocation()
-            if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+            if mousePos.X < 5 and mousePos.Y < 5 and not InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
                 return
             end
         end

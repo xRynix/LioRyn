@@ -3508,6 +3508,7 @@ do
             local X = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
             Fill.Size = UDim2.new(X, 0, 1, 0);
 
+            -- I have no idea what this is
             HideBorderRight.Visible = not (X == 1 or X == 0);
         end;
 
@@ -3644,29 +3645,9 @@ do
                 local gPos = Fill.AbsoluteSize.X;
                 local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
 
-                local Connection;
-                Connection = RenderStepped:Connect(function()
-                    if not (InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or InputService:IsMouseButtonPressed(Enum.UserInputType.Touch)) then
-                        Connection:Disconnect()
-                        
-                        if Library.IsMobile then
-                            Library.CanDrag = true;
-                        end;
-                        
-                        for _, Side in pairs(Sides) do
-                            if typeof(Side) == "Instance" then
-                                if Side:IsA("ScrollingFrame") then
-                                    Side.ScrollingEnabled = true;
-                                end
-                            end;
-                        end;
-
-                        Library:AttemptSave();
-                        return
-                    end
-
+                while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1 or Enum.UserInputType.Touch) do
                     local nMPos = Mouse.X;
-                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
+                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize); -- what in tarnation are these variable names
                     local nXScale = Library:MapValue(nXOffset, 0, Slider.MaxSize, 0, 1);
 
                     local nValue = Slider:GetValueFromXScale(nXScale);
@@ -3679,7 +3660,23 @@ do
                         Library:SafeCallback(Slider.Callback, Slider.Value);
                         Library:SafeCallback(Slider.Changed, Slider.Value);
                     end;
-                end)
+
+                    RenderStepped:Wait();
+                end;
+
+                if Library.IsMobile then
+                    Library.CanDrag = true;
+                end;
+                
+                for _, Side in pairs(Sides) do
+                    if typeof(Side) == "Instance" then
+                        if Side:IsA("ScrollingFrame") then
+                            Side.ScrollingEnabled = true;
+                        end
+                    end;
+                end;
+
+                Library:AttemptSave();
             end;
         end);
 

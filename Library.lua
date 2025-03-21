@@ -3980,12 +3980,6 @@ do
             local Values = Dropdown.Values;
             local Str = '';
 
-            local currentTime = tick()
-            if currentTime - _lastDropdownTime < 0.3 then
-                return
-            end
-            _lastDropdownTime = currentTime
-
             if Info.Multi then
                 for Idx, Value in next, Values do
                     local StringValue = if typeof(Value) == "Instance" then Value.Name else Value;
@@ -4244,12 +4238,6 @@ do
         end;
 
         function Dropdown:CloseDropdown()
-            local currentTime = tick()
-            if currentTime - _lastDropdownTime < 0.3 then
-                return
-            end
-            _lastDropdownTime = currentTime
-
             if Library.IsMobile then            
                 Library.CanDrag = true;
             end;

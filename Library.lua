@@ -23,6 +23,13 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);
 if not Parented then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui", 9e9) end;
 
+--[[
+    You can access Toggles & Options through (I'm planning to remove **a** option):
+        a) getgenv().Toggles, getgenv().Options (IY will break this getgenv)
+        b) getgenv().Linoria.Toggles, getgenv().Linoria.Options
+        c) Library.Toggles, Library.Options
+--]]
+
 local Toggles = {};
 local Options = {};
 local Labels = {};
@@ -35,7 +42,7 @@ getgenv().Linoria = {
     Buttons = Buttons;
 }
 
-getgenv().Toggles = Toggles;
+getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
 getgenv().Options = Options;
 getgenv().Labels = Labels;
 getgenv().Buttons = Buttons;
@@ -1847,11 +1854,6 @@ do
         return self;
     end;
 
-    local _toggleDebounce = false
-    local _dropdownDebounce = false
-    local _sliderDebounce = false
-    
-
     function BaseAddonsFuncs:AddDropdown(Idx, Info)
         Info.ReturnInstanceInstead = if typeof(Info.ReturnInstanceInstead) == "boolean" then Info.ReturnInstanceInstead else false;
 
@@ -2077,18 +2079,9 @@ do
             DropdownArrow.ImageColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
         end;
 
-        local _dropdownDebounce = false
-
         function Dropdown:Display()
             local Values = Dropdown.Values;
             local Str = '';
-
-            if _dropdownDebounce then return end
-            _dropdownDebounce = true
-
-            task.delay(0.3, function()
-                _dropdownDebounce = false
-            end)
 
             if Info.Multi then
                 for Idx, Value in next, Values do
@@ -2206,13 +2199,6 @@ do
 
                 if not IsDisabled then
                     Button.MouseButton1Click:Connect(function(Input)
-                        if _dropdownDebounce then return end
-                        _dropdownDebounce = true
-
-                        task.delay(0.3, function()
-                            _dropdownDebounce = false
-                        end)
-
                         local Try = not Selected;
 
                         if Dropdown:GetActiveValues() == 1 and (not Try) and (not Info.AllowNull) then
@@ -2259,6 +2245,8 @@ do
 
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1);
 
+            -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
+            -- ... and for some reason refreshing the Visible property fixes the issue??????? thanks roblox!
             Scrolling.Visible = false;
             Scrolling.Visible = true;
 
@@ -2335,14 +2323,7 @@ do
         function Dropdown:OpenDropdown()
             if Dropdown.Disabled then
                 return;
-            end
-
-            if _dropdownDebounce then return end
-            _dropdownDebounce = true
-
-            task.delay(0.3, function()
-                _dropdownDebounce = false
-            end)
+            end;
 
             if Library.IsMobile then
                 Library.CanDrag = false;
@@ -2362,13 +2343,6 @@ do
         end;
 
         function Dropdown:CloseDropdown()
-            if _dropdownDebounce then return end
-            _dropdownDebounce = true
-
-            task.delay(0.3, function()
-                _dropdownDebounce = false
-            end)
-
             if Library.IsMobile then         
                 Library.CanDrag = true;
             end;
@@ -3534,6 +3508,7 @@ do
             local X = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
             Fill.Size = UDim2.new(X, 0, 1, 0);
 
+            -- I have no idea what this is
             HideBorderRight.Visible = not (X == 1 or X == 0);
         end;
 
@@ -3649,18 +3624,6 @@ do
             end;
 
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-                if _sliderDebounce then return end
-                _sliderDebounce = true
-                
-                task.delay(0.3, function()
-                    _sliderDebounce = false
-                end)
-
-                local mousePos = InputService:GetMouseLocation()
-                if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                    return
-                end
-
                 if Library.IsMobile then
                     Library.CanDrag = false;
                 end;
@@ -3684,7 +3647,7 @@ do
 
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1 or Enum.UserInputType.Touch) do
                     local nMPos = Mouse.X;
-                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
+                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize); -- what in tarnation are these variable names
                     local nXScale = Library:MapValue(nXOffset, 0, Slider.MaxSize, 0, 1);
 
                     local nValue = Slider:GetValueFromXScale(nXScale);
@@ -3975,7 +3938,6 @@ do
             DropdownArrow.ImageColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
         end;
 
-
         function Dropdown:Display()
             local Values = Dropdown.Values;
             local Str = '';
@@ -4139,6 +4101,8 @@ do
 
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1);
 
+            -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
+            -- ... and for some reason refreshing the Visible property fixes the issue??????? thanks roblox!
             Scrolling.Visible = false;
             Scrolling.Visible = true;
 
@@ -5616,18 +5580,17 @@ function Library:CreateWindow(...)
     local TransparencyCache = {};
     local Toggled = false;
     local Fading = false;
-    
 
+    local _lastToggleTime = 0
+    
     function Library:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
-        if _toggleDebounce then return end
-        _toggleDebounce = true
-
-        task.delay(0.3, function()
-            _toggleDebounce = false
-        end)
+        if _lastToggleTime and tick() - _lastToggleTime < 0.3 then
+            return
+        end
+        _lastToggleTime = tick()
 
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
@@ -5685,8 +5648,8 @@ function Library:CreateWindow(...)
                 elseif Option.Type == 'KeyPicker' then
                     Option:SetModePickerVisibility(false);
                 elseif Option.Type == 'ColorPicker' then
-                    Option:Hide();
                     Option.ContextMenu:Hide();
+                    Option:Hide();
                 end
             end)
         end

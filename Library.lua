@@ -3624,13 +3624,6 @@ do
             end;
 
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    local mousePos = InputService:GetMouseLocation()
-                    if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                        return
-                    end
-                end
-
                 if Library.IsMobile then
                     Library.CanDrag = false;
                 end;
@@ -3652,9 +3645,29 @@ do
                 local gPos = Fill.AbsoluteSize.X;
                 local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
 
-                while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1 or Enum.UserInputType.Touch) do
+                local Connection;
+                Connection = RenderStepped:Connect(function()
+                    if not (InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or InputService:IsMouseButtonPressed(Enum.UserInputType.Touch)) and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                        Connection:Disconnect()
+                        
+                        if Library.IsMobile then
+                            Library.CanDrag = true;
+                        end;
+                        
+                        for _, Side in pairs(Sides) do
+                            if typeof(Side) == "Instance" then
+                                if Side:IsA("ScrollingFrame") then
+                                    Side.ScrollingEnabled = true;
+                                end
+                            end;
+                        end;
+
+                        Library:AttemptSave();
+                        return
+                    end
+
                     local nMPos = Mouse.X;
-                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize); -- what in tarnation are these variable names
+                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
                     local nXScale = Library:MapValue(nXOffset, 0, Slider.MaxSize, 0, 1);
 
                     local nValue = Slider:GetValueFromXScale(nXScale);
@@ -3667,23 +3680,7 @@ do
                         Library:SafeCallback(Slider.Callback, Slider.Value);
                         Library:SafeCallback(Slider.Changed, Slider.Value);
                     end;
-
-                    RenderStepped:Wait();
-                end;
-
-                if Library.IsMobile then
-                    Library.CanDrag = true;
-                end;
-                
-                for _, Side in pairs(Sides) do
-                    if typeof(Side) == "Instance" then
-                        if Side:IsA("ScrollingFrame") then
-                            Side.ScrollingEnabled = true;
-                        end
-                    end;
-                end;
-
-                Library:AttemptSave();
+                end)
             end;
         end);
 

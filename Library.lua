@@ -3624,6 +3624,13 @@ do
             end;
 
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local mousePos = InputService:GetMouseLocation()
+                    if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                        return
+                    end
+                end
+
                 if Library.IsMobile then
                     Library.CanDrag = false;
                 end;

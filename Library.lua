@@ -5581,16 +5581,17 @@ function Library:CreateWindow(...)
     local Toggled = false;
     local Fading = false;
     
+    local _lastToggleTime = 0
+
     function Library:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;
         if Fading then return end;
 
-        self._lastToggleTime = self._lastToggleTime or 0
-
-        if tick() - self._lastToggleTime < 0.3 then
+        local currentTime = tick()
+        if currentTime - _lastToggleTime < 0.3 then
             return
         end
-        self._lastToggleTime = tick()
+        _lastToggleTime = currentTime
 
         local FadeTime = Config.MenuFadeTime;
         Fading = true;

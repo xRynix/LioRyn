@@ -4433,14 +4433,14 @@ end;
 do
     Library.LeftNotificationArea = Library:Create('Frame', {
         BackgroundTransparency = 1;
-        Position = UDim2.new(0, 0, 0, 40);
+        Position = UDim2.new(0, 10, 0, 40);
         Size = UDim2.new(0, 300, 0, 200);
         ZIndex = 100;
         Parent = ScreenGui;
     });
 
     Library:Create('UIListLayout', {
-        Padding = UDim.new(0, 4);
+        Padding = UDim.new(0, 6);
         FillDirection = Enum.FillDirection.Vertical;
         SortOrder = Enum.SortOrder.LayoutOrder;
         Parent = Library.LeftNotificationArea;
@@ -4450,14 +4450,14 @@ do
     Library.RightNotificationArea = Library:Create('Frame', {
         AnchorPoint = Vector2.new(1, 0);
         BackgroundTransparency = 1;
-        Position = UDim2.new(1, 0, 0, 40);
+        Position = UDim2.new(1, -10, 0, 40);
         Size = UDim2.new(0, 300, 0, 200);
         ZIndex = 100;
         Parent = ScreenGui;
     });
 
     Library:Create('UIListLayout', {
-        Padding = UDim.new(0, 4);
+        Padding = UDim.new(0, 6);
         FillDirection = Enum.FillDirection.Vertical;
         HorizontalAlignment = Enum.HorizontalAlignment.Right;
         SortOrder = Enum.SortOrder.LayoutOrder;
@@ -4623,16 +4623,27 @@ function Library:Notify(...)
         Data.Description = tostring(Info.Description)
         Data.Time = Info.Time or 5
         Data.SoundId = Info.SoundId
+        Data.Color = Info.Color or Library.AccentColor
+        Data.Icon = Info.Icon
     else
         Data.Title = ""
         Data.Description = tostring(Info)
         Data.Time = select(2, ...) or 5
         Data.SoundId = select(3, ...)
+        Data.Color = Library.AccentColor
     end
     
     local Side = string.lower(Library.NotifySide);
     local XSize, YSize = Library:GetTextBounds(Data.Description, Library.Font, 14);
-    YSize = YSize + 7
+    local TitleSize = 0
+    
+    if Data.Title ~= "" then
+        local X, Y = Library:GetTextBounds(Data.Title, Library.Font, 15);
+        TitleSize = Y + 2
+        YSize = YSize + TitleSize
+    end
+    
+    YSize = math.max(YSize + 10, Data.Icon and 30 or 20)
 
     local NotifyOuter = Library:Create('Frame', {
         BorderColor3 = Color3.new(0, 0, 0);

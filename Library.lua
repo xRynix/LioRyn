@@ -4615,7 +4615,7 @@ function Library:SetNotifySide(Side: string)
 end;
 
 function Library:Notify(...)
-    local Data = { Steps = 1 }
+    local Data = { Steps = 1, CurrentStep = 1 }
     local Info = select(1, ...)
 
     if typeof(Info) == "table" then
@@ -4623,13 +4623,25 @@ function Library:Notify(...)
         Data.Description = tostring(Info.Description)
         Data.Time = Info.Time or 5
         Data.SoundId = Info.SoundId
-        Data.Color = Info.Color or Library.AccentColor
-        Data.Icon = Info.Icon
+        Data.Type = string.lower(Info.Type or "info")
+        Data.Steps = Info.Steps or 1
+        Data.Actions = Info.Actions
+        Data.Callback = Info.Callback
     else
         Data.Title = ""
         Data.Description = tostring(Info)
         Data.Time = select(2, ...) or 5
         Data.SoundId = select(3, ...)
+        Data.Type = "info"
+    end
+    
+    if Data.Type == "success" then
+        Data.Color = Color3.fromRGB(46, 204, 113)
+    elseif Data.Type == "warning" then
+        Data.Color = Color3.fromRGB(230, 126, 34)
+    elseif Data.Type == "error" then
+        Data.Color = Color3.fromRGB(231, 76, 60)
+    else
         Data.Color = Library.AccentColor
     end
     
@@ -4643,7 +4655,10 @@ function Library:Notify(...)
         YSize = YSize + TitleSize
     end
     
-    YSize = math.max(YSize + 10, Data.Icon and 30 or 20)
+    local ProgressHeight = Data.Steps > 1 and 6 or 0
+    local ActionsHeight = Data.Actions and (#Data.Actions * 25) or 0
+    
+    YSize = math.max(YSize + 10 + ProgressHeight + ActionsHeight, 30)
 
     local NotifyOuter = Library:Create('Frame', {
         BorderColor3 = Color3.new(0, 0, 0);
@@ -4694,11 +4709,28 @@ function Library:Notify(...)
         end
     });
 
+    local IconMap = {
+        info = "rbxassetid://6031071053",
+        success = "rbxassetid://6031068420",
+        warning = "rbxassetid://6031071057",
+        error = "rbxassetid://6031071054"
+    }
+    
+    local Icon = Library:Create('ImageLabel', {
+        BackgroundTransparency = 1;
+        Size = UDim2.new(0, 20, 0, 20);
+        Position = UDim2.new(0, 8, 0, 8);
+        Image = IconMap[Data.Type];
+        ImageColor3 = Data.Color;
+        ZIndex = 104;
+        Parent = InnerFrame;
+    });
+
     local NotifyLabel = Library:CreateLabel({
         AnchorPoint = if Side == "left" then Vector2.new(0, 0) else Vector2.new(1, 0);
-        Position = if Side == "left" then UDim2.new(0, 4, 0, 0) else UDim2.new(1, -4, 0, 0);
-        Size = UDim2.new(1, -4, 1, 0);
-        Text = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Data.Description);
+        Position = UDim2.new(if Side == "left" then 0, 36 else 1, -8, 0, 8);
+        Size = UDim2.new(1, -44, 0, TitleSize + YSize - ProgressHeight - ActionsHeight);
+        Text = (if Data.Title == "" then "" else "<b>" .. Data.Title .. "</b>\n") .. tostring(Data.Description);
         TextXAlignment = if Side == "left" then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right;
         TextSize = 14;
         ZIndex = 103;
@@ -4709,25 +4741,84 @@ function Library:Notify(...)
     local SideColor = Library:Create('Frame', {
         AnchorPoint = if Side == "left" then Vector2.new(0, 0) else Vector2.new(1, 0);
         Position = if Side == "left" then UDim2.new(0, -1, 0, -1) else UDim2.new(1, -1, 0, -1);
-        BackgroundColor3 = Library.AccentColor;
+        BackgroundColor3 = Data.Color;
         BorderSizePixel = 0;
         Size = UDim2.new(0, 3, 1, 2);
         ZIndex = 104;
         Parent = NotifyOuter;
     });
 
+    local ProgressBar, ProgressFill
+    if Data.Steps > 1 then
+        ProgressBar = Library:Create('Frame', {
+            BackgroundColor3 = Color3.fromRGB(50, 50, 50);
+            BorderSizePixel = 0;
+            Position = UDim2.new(0, 8, 1, -8 - ActionsHeight);
+            Size = UDim2.new(1, -16, 0, 4);
+            ZIndex = 104;
+            Parent = InnerFrame;
+        });
+        
+        ProgressFill = Library:Create('Frame', {
+            BackgroundColor3 = Data.Color;
+            BorderSizePixel = 0;
+            Size = UDim2.new(1/Data.Steps, 0, 1, 0);
+            ZIndex = 105;
+            Parent = ProgressBar;
+        });
+    end
+    
+    local ActionButtons = {}
+    if Data.Actions and type(Data.Actions) == "table" then
+        for i, action in ipairs(Data.Actions) do
+            local Button = Library:Create('TextButton', {
+                BackgroundColor3 = Library:GetDarkerColor(Library.MainColor);
+                BorderColor3 = Library.OutlineColor;
+                Position = UDim2.new(0, 8 + (i-1) * 80, 1, -8 - (25 * (i-1)));
+                Size = UDim2.new(0, 75, 0, 22);
+                Text = action.Text;
+                TextColor3 = Color3.new(1, 1, 1);
+                TextSize = 13;
+                Font = Library.Font;
+                ZIndex = 105;
+                Parent = InnerFrame;
+            });
+            
+            Library:AddToRegistry(Button, {
+                BackgroundColor3 = function() return Library:GetDarkerColor(Library.MainColor) end;
+                BorderColor3 = 'OutlineColor';
+            });
+            
+            Button.MouseButton1Click:Connect(function()
+                if typeof(action.Callback) == "function" then
+                    action.Callback(Data)
+                end
+            end);
+            
+            table.insert(ActionButtons, Button)
+        end
+    end
+
     function Data:Resize()
         XSize, YSize = Library:GetTextBounds(NotifyLabel.Text, Library.Font, 14);
-        YSize = YSize + 7
+        YSize = YSize + 16
+        
+        if Data.Steps > 1 then
+            YSize = YSize + 12
+        end
+        
+        if Data.Actions then
+            YSize = YSize + (#Data.Actions * 25)
+        end
     
-        pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
+        pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 50, 0, YSize), 'Out', 'Quad', 0.4, true);
     end
 
     function Data:ChangeTitle(NewText)
         NewText = if NewText == nil then "" else tostring(NewText);
 
         Data.Title = NewText;
-        NotifyLabel.Text = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Data.Description);
+        NotifyLabel.Text = (if Data.Title == "" then "" else "<b>" .. Data.Title .. "</b>\n") .. tostring(Data.Description);
 
         Data:Resize();
     end
@@ -4737,20 +4828,49 @@ function Library:Notify(...)
         NewText = tostring(NewText);
 
         Data.Description = NewText;
-        NotifyLabel.Text = (if Data.Title == "" then "" else "[" .. Data.Title .. "] ") .. tostring(Data.Description);
+        NotifyLabel.Text = (if Data.Title == "" then "" else "<b>" .. Data.Title .. "</b>\n") .. tostring(Data.Description);
 
         Data:Resize();
     end
 
-    function Data:ChangeStep()
-        -- this is supposed to be empty
+    function Data:UpdateProgress(Step)
+        if not ProgressFill then return end
+        
+        Data.CurrentStep = math.clamp(Step, 1, Data.Steps)
+        ProgressFill:TweenSize(
+            UDim2.new(Data.CurrentStep/Data.Steps, 0, 1, 0),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quad,
+            0.2,
+            true
+        )
+        
+        return Data.CurrentStep == Data.Steps
+    end
+
+    function Data:SetType(NewType)
+        NewType = string.lower(NewType or "info")
+        Data.Type = NewType
+        
+        if NewType == "success" then
+            Data.Color = Color3.fromRGB(46, 204, 113)
+        elseif NewType == "warning" then
+            Data.Color = Color3.fromRGB(230, 126, 34)
+        elseif NewType == "error" then
+            Data.Color = Color3.fromRGB(231, 76, 60)
+        else
+            Data.Color = Library.AccentColor
+        end
+        
+        SideColor.BackgroundColor3 = Data.Color
+        Icon.Image = IconMap[NewType]
+        Icon.ImageColor3 = Data.Color
+        if ProgressFill then
+            ProgressFill.BackgroundColor3 = Data.Color
+        end
     end
 
     Data:Resize();
-
-    Library:AddToRegistry(SideColor, {
-        BackgroundColor3 = 'AccentColor';
-    }, true);
 
     if Data.SoundId then
         Library:Create('Sound', {
@@ -4761,7 +4881,8 @@ function Library:Notify(...)
         }):Destroy();
     end
 
-    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), 'Out', 'Quad', 0.4, true);
+    NotifyOuter.Size = UDim2.new(0, 0, 0, YSize)
+    pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 50, 0, YSize), 'Out', 'Quad', 0.4, true);
 
     task.spawn(function()
         if typeof(Data.Time) == "Instance" then
@@ -4771,8 +4892,13 @@ function Library:Notify(...)
         end
 
         pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, 0, 0, YSize), 'Out', 'Quad', 0.4, true);
+        
         task.wait(0.4);
         NotifyOuter:Destroy();
+        
+        if typeof(Data.Callback) == "function" then
+            Data.Callback()
+        end
     end);
 
     return Data

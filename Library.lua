@@ -23,13 +23,6 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 local Parented = pcall(function() ScreenGui.Parent = GetHUI(); end);
 if not Parented then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui", 9e9) end;
 
---[[
-    You can access Toggles & Options through (I'm planning to remove **a** option):
-        a) getgenv().Toggles, getgenv().Options (IY will break this getgenv)
-        b) getgenv().Linoria.Toggles, getgenv().Linoria.Options
-        c) Library.Toggles, Library.Options
---]]
-
 local Toggles = {};
 local Options = {};
 local Labels = {};
@@ -42,7 +35,7 @@ getgenv().Linoria = {
     Buttons = Buttons;
 }
 
-getgenv().Toggles = Toggles; -- if you load infinite yeild after you executed any script with LinoriaLib it will just break the whole UI lib :/ (thats why I added getgenv().Linoria)
+getgenv().Toggles = Toggles;
 getgenv().Options = Options;
 getgenv().Labels = Labels;
 getgenv().Buttons = Buttons;
@@ -1854,6 +1847,10 @@ do
         return self;
     end;
 
+    local _lastToggleTime = 0
+    local _lastDropdownTime = 0
+    local _lastSliderTime = 0
+
     function BaseAddonsFuncs:AddDropdown(Idx, Info)
         Info.ReturnInstanceInstead = if typeof(Info.ReturnInstanceInstead) == "boolean" then Info.ReturnInstanceInstead else false;
 
@@ -3508,7 +3505,6 @@ do
             local X = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
             Fill.Size = UDim2.new(X, 0, 1, 0);
 
-            -- I have no idea what this is
             HideBorderRight.Visible = not (X == 1 or X == 0);
         end;
 
@@ -3624,6 +3620,17 @@ do
             end;
 
             if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame()) or Input.UserInputType == Enum.UserInputType.Touch then
+                local currentTime = tick()
+                if currentTime - _lastSliderTime < 0.3 then
+                    return
+                end
+                _lastSliderTime = currentTime
+
+                local mousePos = InputService:GetMouseLocation()
+                if mousePos.X < 5 and mousePos.Y < 5 and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                    return
+                end
+
                 if Library.IsMobile then
                     Library.CanDrag = false;
                 end;
@@ -3647,7 +3654,7 @@ do
 
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1 or Enum.UserInputType.Touch) do
                     local nMPos = Mouse.X;
-                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize); -- what in tarnation are these variable names
+                    local nXOffset = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
                     local nXScale = Library:MapValue(nXOffset, 0, Slider.MaxSize, 0, 1);
 
                     local nValue = Slider:GetValueFromXScale(nXScale);
@@ -3938,9 +3945,16 @@ do
             DropdownArrow.ImageColor3 = Dropdown.Disabled and Library.DisabledAccentColor or Color3.new(1, 1, 1);
         end;
 
+
         function Dropdown:Display()
             local Values = Dropdown.Values;
             local Str = '';
+
+            local currentTime = tick()
+            if currentTime - _lastDropdownTime < 0.3 then
+                return
+            end
+            _lastDropdownTime = currentTime
 
             if Info.Multi then
                 for Idx, Value in next, Values do
@@ -4101,8 +4115,6 @@ do
 
             Scrolling.CanvasSize = UDim2.fromOffset(0, (Count * (20 * DPIScale)) + 1);
 
-            -- Workaround for silly roblox bug - not sure why it happens but sometimes the dropdown list will be empty
-            -- ... and for some reason refreshing the Visible property fixes the issue??????? thanks roblox!
             Scrolling.Visible = false;
             Scrolling.Visible = true;
 
@@ -4202,6 +4214,12 @@ do
         end;
 
         function Dropdown:CloseDropdown()
+            local currentTime = tick()
+            if currentTime - _lastDropdownTime < 0.3 then
+                return
+            end
+            _lastDropdownTime = currentTime
+
             if Library.IsMobile then            
                 Library.CanDrag = true;
             end;
@@ -5581,7 +5599,6 @@ function Library:CreateWindow(...)
     local Toggled = false;
     local Fading = false;
     
-    local _lastToggleTime = 0
 
     function Library:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end;

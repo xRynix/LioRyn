@@ -3508,7 +3508,6 @@ do
             local X = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
             Fill.Size = UDim2.new(X, 0, 1, 0);
 
-            -- I have no idea what this is
             HideBorderRight.Visible = not (X == 1 or X == 0);
         end;
 
@@ -3647,7 +3646,7 @@ do
 
                 local Connection;
                 Connection = RenderStepped:Connect(function()
-                    if not (InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or InputService:IsMouseButtonPressed(Enum.UserInputType.Touch)) and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                    if not (InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or InputService:IsMouseButtonPressed(Enum.UserInputType.Touch)) then
                         Connection:Disconnect()
                         
                         if Library.IsMobile then

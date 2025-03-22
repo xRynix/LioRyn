@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> This is a maintained fork of LinoriaLib. This is not the original LinoriaLib repository.<br />
+> This is a fork of LinoriaLib as a side project. This is not the original LinoriaLib repository.<br />
 > Changelogs: [Changelogs](CHANGELOGS.md)
 
 # LinoriaLib
